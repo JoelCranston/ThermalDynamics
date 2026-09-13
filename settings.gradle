@@ -16,3 +16,15 @@ pluginManagement {
         maven { url 'https://maven.parchmentmc.org/' }
     }
 }
+includeBuild('../CoFHCore') {
+    dependencySubstitution {
+        substitute module('com.teamcofh:cofh_core') using project(':')
+    }
+}
+includeBuild('../ThermalCore') {
+    dependencySubstitution {
+        substitute module('com.teamcofh:thermal_core') using project(':')
+    }
+}
+
+rootProject.name = 'ThermalDynamics'

@@ -72,7 +72,7 @@ processResources {
         expand 'file': ['jarVersion': mod_version],
                 'mc_version': mc_version,
                 'neo_version': neo_version,
-                'lang_version': neo_version.split('\\.')[0],
+                'lang_version': '2',
                 'cofh_core_version_range': "[${cofh_core_version.replace(".+", "")},${cofh_core_max_version})",
                 'thermal_core_version_range': "[${thermal_core_version.replace(".+", "")},${thermal_core_max_version})"
     }
@@ -102,6 +102,34 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+}
+
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        workingDirectory project.layout.projectDirectory.dir('run').dir(name)
+        modSource project.sourceSets.main
+    }
+
+    client {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
+
+    server {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        programArgument '--nogui'
+    }
+
+    gameTestServer {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
+
+    data {
+        programArguments '--mod', project.mod_id, '--all', '--output',
+                file('src/main/generated/').getAbsolutePath(), '--existing',
+                file('src/main/resources/').getAbsolutePath()
+    }
 }
 
 test {
