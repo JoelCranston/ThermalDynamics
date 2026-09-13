@@ -2,11 +2,11 @@ plugins {
     id 'java'
     id 'maven-publish'
 
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.gradleup.shadow' version '8.3.11'
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'com.modrinth.minotaur' version "2.+"
 
-    id 'net.neoforged.gradle.userdev' version '7.0.97'
+    id 'net.neoforged.gradle.userdev' version '7.1.38'
 }
 
 java {
@@ -26,7 +26,7 @@ base {
 
 def buildVersion = "${mod_version}." + (System.getenv("BUILD_NUMBER") ?: '0')
 version = "${mc_version}-${buildVersion}"
-println "Starting build of ${archivesBaseName}, Version: ${mod_version}"
+println "Starting build of ${base.archivesName.get()}, Version: ${mod_version}"
 println "Using NeoForge: ${neo_version}, for Minecraft: ${mc_version}"
 
 minecraft {
@@ -201,14 +201,14 @@ publishing {
     publications {
         mod(MavenPublication) {
             groupId project.group
-            artifactId project.archivesBaseName
+            artifactId project.base.archivesName.get()
             version project.version
             artifact shadowJar
             artifact sourcesJar
 
             pom {
-                name = archivesBaseName
-                description = archivesBaseName
+                name = base.archivesName.get()
+                description = base.archivesName.get()
                 url = "https://github.com/CoFH/${project.name}"
                 scm {
                     url = "https://github.com/CoFH/${project.name}"
