@@ -115,3 +115,30 @@ Gradle. Verified instead with a standalone `javac` of all 105 sources against th
 1.21.1 jars plus CoFHCore's `build/classes/java/main`: **122 errors, every one of them an
 unresolved `cofh.thermal.core` / `cofh.thermal.lib` symbol.** Nothing in Minecraft or
 NeoForge is unresolved.
+
+---
+
+## Phase A complete — 1.21.1 (2026-09-22)
+
+Ported **source-level and in parallel with ThermalCore**, which meant working without a
+compiler: this repo's build `includeBuild`s ThermalCore, so `./gradlew compileJava` stopped
+there the whole time. Every shape came out of the 21.1.251 sources jar or CoFHCore's
+already-ported code, checked by grep rather than by javac. It compiled clean on the first real
+attempt once ThermalCore landed, and boots headless with no data errors.
+
+Ten commits, one per root cause: event bus and menu screens → ItemStack NBT to `CUSTOM_DATA` →
+vertex API in the grid debug renderer → `HolderLookup.Provider` through persistence → FluidStack
+copy/compare/wire format → `LevelTickEvent.Post` → `Block#use` → `useItemOn` → payload types and
+stream codecs → access transformers back in step with CoFHCore → geometry loader and datagen.
+
+Only 37 of 105 files differed from `ThermalDynamicsForNeoForge`, so that diff was effectively
+the whole worklist — with one deliberate divergence: their `registryBuf(buffer)` helper casts a
+plain `FriendlyByteBuf` to `RegistryFriendlyByteBuf` in every fluid packet, which is a runtime
+`ClassCastException` against CoFH's scratch buffers. Five sites here go through
+`FluidHelper.writeFluidStack`/`readFluidStack` instead.
+
+### Owed
+
+`runData` has not been run, so the generated loot, recipe and tag output is unverified; and the
+client pass (a duct network moving items and energy). Shapes:
+`../CoFHCore/docs/api-notes-1.21.1.md`.

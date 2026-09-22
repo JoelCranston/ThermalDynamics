@@ -38,14 +38,20 @@ before writing code against it.
 
 ## Current state
 
-Branch **`1.21.1`**. The build files are back at their committed 1.20.4 values (the stray
-uncommitted 1.20.6 bump was discarded on 2026-09-22 — it was never a target); Phase 0.3/0.4
-(ModDevGradle 2.0.147, `neoforge.mods.toml`) and A.0 (1.21.1 values) replace them wholesale,
-per `../CoFHCore/docs/port-plan.md` §4.3–§4.4 and §5 A.0.
+**Phase A done (2026-09-22): builds clean and boots headless on NeoForge 21.1.251.**
+Branch **`1.21.1`**, ModDevGradle 2.0.147, `META-INF/neoforge.mods.toml`.
 
-The family-wide `ResourceLocation` sweep (Phase A.1 category 2) has already been applied and
-committed here, ahead of this repo's own Phase A — it was cheaper to run once for all four.
+This repo was ported **source-level, in parallel with ThermalCore**, against the 21.1.251
+sources jar and CoFHCore's already-ported code — it could not compile at the time, since its
+build `includeBuild`s ThermalCore. It compiled clean on the first attempt once ThermalCore
+landed, and `verify_runserver.sh` reaches `Done (…)` with no data errors.
 
-**Blocked on CoFHCore**: this repo's own Phase A starts only once `../CoFHCore` builds clean
-on 1.21.1 and boots headless (its `docs/TODO.md` tracks that). Then: apply Phase 0.3/0.4
-here, bump to 1.21.1, and work through the SPLIGAN diff (port-plan.md §5 A.2/A.3).
+Only 37 of 105 files differed from SPLIGAN's `ThermalDynamicsForNeoForge`, so that diff was
+effectively the whole worklist — but **not for the fluid packets**: their `registryBuf(buffer)`
+helper casts a plain `FriendlyByteBuf` to `RegistryFriendlyByteBuf`, which is a runtime
+`ClassCastException` against CoFH's scratch packet buffers. This repo goes through
+`FluidHelper.writeFluidStack`/`readFluidStack` instead.
+
+**Next step**: nothing blocking. `runData` has not been run here, so the generated loot, recipe
+and tag output is unverified; and the client pass (duct networks moving items and energy) is
+Joel's — see `../CoFHCore/docs/TODO.md`. API shapes: `../CoFHCore/docs/api-notes-1.21.1.md`.
