@@ -12,8 +12,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Matrix4f;
@@ -22,14 +20,12 @@ import org.joml.Vector3f;
 import java.util.*;
 
 import static cofh.core.client.CoreRenderType.THICK_LINES;
-import static cofh.lib.util.constants.ModIds.ID_THERMAL;
 import static net.minecraft.client.renderer.RenderStateShard.COLOR_DEPTH_WRITE;
 import static net.minecraft.client.renderer.RenderStateShard.NO_DEPTH_TEST;
 
 /**
  * Created by covers1624 on 12/12/21.
  */
-@Mod.EventBusSubscriber (value = Dist.CLIENT, modid = ID_THERMAL)
 public class DebugRenderer {
 
     private static final AABB smolBox = new AABB(0.25, 0.25, 0.25, 0.75, 0.75, 0.75);
