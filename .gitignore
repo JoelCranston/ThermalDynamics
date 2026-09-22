@@ -26,3 +26,5 @@
 docs/context/
 
 /src/main/generated/.cache/
+# macOS
+.DS_Store
