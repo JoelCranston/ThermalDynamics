@@ -10,7 +10,7 @@ import static cofh.lib.util.constants.ModIds.ID_THERMAL_DYNAMICS;
 
 public record AttachmentConfigPayload(BlockPos pos, Direction side, FriendlyByteBuf buf) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(ID_THERMAL_DYNAMICS, "attachment_config_packet");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "attachment_config_packet");
 
     public AttachmentConfigPayload(final FriendlyByteBuf buf) {
 

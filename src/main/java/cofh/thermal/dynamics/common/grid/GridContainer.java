@@ -504,7 +504,7 @@ public class GridContainer extends SavedData implements IGridContainer {
             CompoundTag gridTag = nbt.getCompound(i);
             UUID id = gridTag.getUUID("id");
             assert !grids.containsKey(id) : "Duplicate grid found.";
-            ResourceLocation gridTypeName = new ResourceLocation(gridTag.getString("type"));
+            ResourceLocation gridTypeName = ResourceLocation.parse(gridTag.getString("type"));
             IGridType<?> gridType = ThermalDynamics.GRID_TYPE_REGISTRY.get(gridTypeName);
             if (gridType == null) {
                 LOGGER.error("Failed to load Grid {} with type {} in world {}. GridType is no longer registered, it will be removed from the world.", id, gridTypeName, world.dimension().location());

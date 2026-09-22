@@ -10,7 +10,7 @@ import static cofh.lib.util.constants.ModIds.ID_THERMAL_DYNAMICS;
 
 public record AttachmentRedstoneControlPayload(BlockPos pos, Direction side, int threshold, byte mode) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(ID_THERMAL_DYNAMICS, "attachment_redstone_packet");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "attachment_redstone_packet");
 
     public AttachmentRedstoneControlPayload(final FriendlyByteBuf buf) {
 

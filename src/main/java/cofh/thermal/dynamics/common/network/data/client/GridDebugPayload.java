@@ -8,7 +8,7 @@ import static cofh.lib.util.constants.ModIds.ID_THERMAL_DYNAMICS;
 
 public record GridDebugPayload(FriendlyByteBuf buf) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = new ResourceLocation(ID_THERMAL_DYNAMICS, "grid_debug_packet");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "grid_debug_packet");
 
     @Override
     public void write(FriendlyByteBuf buf) {
