@@ -16,7 +16,12 @@ Phase A (1.21.1) is **code-complete** on branch `1.21.1`: `./gradlew build` is c
 1. **Joel's `runClient` pass** (port plan §A.4). It is the one Phase A exit criterion left, and
    everything client-side is unverified. See `../CoFHCore/docs/TODO.md` for the checklist and
    for `MouseHandlerMixin`, a specific suspect.
-2. **Phase B (B.10) waits for CoFHCore's 26.1.2 port** (B.0-B.2 done there, ~1537 errors left).
+2. **Phase B (B.10) waits for CoFHCore's 26.1.2 port** (B.0-B.5 done there, ~895 errors left: recipes, client, mixins).
+   **Before starting B.10, read `../CoFHCore/docs/TODO.md`'s "B.10 inherits from B.3/B.4/B.5"
+   notes.** They list what changes here: the persistence bridge, capability registration on the new
+   transfer API, armour and tool material records, the `ENCHANTABLE` component, the new
+   `neighborChanged` without a neighbour position (TD's ducts), and more. The shapes are in
+   `../CoFHCore/docs/api-notes-26.1.2.md`.
    Nothing to do here until CoFHCore compiles on 26.1.2. When it does, branch `26.1.2` from
    `1.21.1`, switch the data run back to `clientData()`, and **regenerate `src/main/generated`
    rather than hand-migrating it** (see the progress log's runData entry for why).
