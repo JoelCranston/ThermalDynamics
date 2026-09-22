@@ -20,6 +20,5 @@
   "result": {
     "count": 4,
     "id": "thermal:energy_duct"
-  },
-  "show_notification": true
+  }
 }

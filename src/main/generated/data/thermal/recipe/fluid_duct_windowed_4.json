@@ -15,6 +15,5 @@
   "result": {
     "count": 4,
     "id": "thermal:fluid_duct_windowed"
-  },
-  "show_notification": true
+  }
 }
