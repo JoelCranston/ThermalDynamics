@@ -3,6 +3,7 @@ package cofh.thermal.dynamics.common.block.entity.duct;
 import cofh.core.common.network.packet.client.ModelUpdatePacket;
 import cofh.core.common.network.packet.client.TileRedstonePacket;
 import cofh.core.common.network.packet.client.TileStatePacket;
+import cofh.core.util.helpers.ItemHelper;
 import cofh.lib.api.IConveyableData;
 import cofh.lib.api.block.entity.IPacketHandlerTile;
 import cofh.lib.api.block.entity.ITileLocation;
@@ -139,7 +140,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
         connections[side.ordinal()] = FORCED;
 
         ItemStack offhand = player.getItemInHand(InteractionHand.OFF_HAND);
-        if (offhand.hasTag() && offhand.getItem() instanceof RedprintItem) {
+        if (ItemHelper.hasCustomData(offhand) && offhand.getItem() instanceof RedprintItem) {
             attachmentRedprintInteraction(offhand, side, player);
         }
         setChanged();
@@ -173,16 +174,17 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
     public boolean attachmentRedprintInteraction(ItemStack stack, Direction side, Player player) {
 
         if (side != null && attachments[side.ordinal()] instanceof IConveyableData conveyableData) {
-            if (stack.getTag() == null) {
-                conveyableData.writeConveyableData(player, stack.getOrCreateTag());
-                if (stack.getTag().isEmpty()) {
-                    stack.setTag(null);
+            if (!ItemHelper.hasCustomData(stack)) {
+                // CustomData.update removes the component again when the mutator writes nothing,
+                // so the old "wrote an empty tag, put it back to null" branch is just "still absent".
+                ItemHelper.mutateCustomData(stack, tag -> conveyableData.writeConveyableData(player, tag));
+                if (!ItemHelper.hasCustomData(stack)) {
                     return false;
                 }
                 player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 0.7F);
                 return true;
             }
-            conveyableData.readConveyableData(player, stack.getTag());
+            conveyableData.readConveyableData(player, ItemHelper.getCustomData(stack));
             player.level().playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, 0.8F);
             return true;
         }
