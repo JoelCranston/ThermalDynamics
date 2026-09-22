@@ -36,6 +36,12 @@ Same as CoFHCore's (`../CoFHCore/CLAUDE.md`) — license (CoFH "Don't Be a Jerk"
 branch-per-target-version, verify every API shape against the real (patched-sources) jar
 before writing code against it.
 
+**Code style matches upstream CoFH** (Joel, 2026-09-22). The port is meant to go upstream as
+pull requests, so every added line follows `../CoFHCore/docs/code-style.md`: comments are rare
+and one line (no `// 1.21:` tags, porting narration or doc pointers), every method body opens
+with a blank line, and annotation arguments take a space (`@Inject (…)`). API findings go in
+the api-notes docs, not in code comments.
+
 ## Current state
 
 **Phase A done (2026-09-22): builds clean and boots headless on NeoForge 21.1.251.**
