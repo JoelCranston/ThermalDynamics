@@ -3,8 +3,8 @@ package cofh.thermal.dynamics.common.event;
 import cofh.thermal.dynamics.api.grid.IGridContainer;
 import cofh.thermal.dynamics.common.grid.GridContainer;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 public class GridEvents {
 
@@ -15,14 +15,16 @@ public class GridEvents {
         NeoForge.EVENT_BUS.addListener(GridEvents::onChunkUnload);
     }
 
-    private static void onWorldTick(TickEvent.LevelTickEvent event) {
+    // TickEvent.LevelTickEvent split into LevelTickEvent.Pre/Post; subscribing to Post is what
+    // the old "phase == END" guard did, and the level replaces the removed side/level fields.
+    private static void onWorldTick(LevelTickEvent.Post event) {
 
-        if (event.side.isClient()) {
+        if (event.getLevel().isClientSide()) {
             return;
         }
-        IGridContainer gridContainer = IGridContainer.getGrid(event.level);
+        IGridContainer gridContainer = IGridContainer.getGrid(event.getLevel());
         if (gridContainer != null) {
-            ((GridContainer) gridContainer).onWorldTick(event.phase);
+            ((GridContainer) gridContainer).onWorldTick();
         }
     }
 

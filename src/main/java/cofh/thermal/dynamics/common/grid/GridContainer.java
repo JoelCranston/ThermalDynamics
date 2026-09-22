@@ -23,7 +23,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.neoforged.neoforge.event.TickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -431,11 +430,9 @@ public class GridContainer extends SavedData implements IGridContainer {
     }
 
     // region EVENT CALLBACKS
-    public void onWorldTick(TickEvent.Phase phase) {
+    public void onWorldTick() {
         // TODO do we want to pass this through to grids?
-        if (phase != TickEvent.Phase.END) {
-            return;
-        }
+        // The END-phase guard is gone: GridEvents listens for LevelTickEvent.Post now.
         try {
             for (Grid<?, ?> value : loadedGrids.values()) {
                 value.tick();
