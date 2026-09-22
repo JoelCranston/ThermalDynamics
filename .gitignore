@@ -11,6 +11,7 @@
 
 # Other Files.
 !README.md
+!CLAUDE.md
 
 # Include git important files
 !.gitmodules
@@ -19,5 +20,9 @@
 
 # Include Important Folders
 !src/
+!docs/
+
+# Session context exports are local-only, not for the repo
+docs/context/
 
 /src/main/generated/.cache/
