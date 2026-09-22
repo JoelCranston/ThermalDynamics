@@ -3,25 +3,25 @@
   "category": "misc",
   "key": {
     "G": {
-      "tag": "forge:glass"
+      "tag": "c:glass_blocks"
     },
     "I": {
-      "tag": "forge:ingots/invar"
+      "tag": "c:ingots/iron"
     },
     "N": {
-      "tag": "forge:nuggets/lead"
+      "tag": "c:nuggets/tin"
     },
-    "R": {
-      "item": "thermal:redstone_servo"
+    "P": {
+      "item": "minecraft:paper"
     }
   },
   "pattern": [
     "NGN",
-    "IRI"
+    "IPI"
   ],
   "result": {
     "count": 2,
-    "item": "thermal:turbo_servo_attachment"
+    "item": "thermal:filter_attachment"
   },
   "show_notification": true
 }

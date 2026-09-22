@@ -3,18 +3,18 @@
   "category": "building",
   "key": {
     "C": {
-      "tag": "forge:ingots/bronze"
+      "tag": "c:ingots/bronze"
     },
-    "L": {
-      "tag": "forge:ingots/lead"
+    "G": {
+      "tag": "thermal:glass/hardened"
     }
   },
   "pattern": [
-    "CLC"
+    "CGC"
   ],
   "result": {
     "count": 4,
-    "item": "thermal:fluid_duct"
+    "item": "thermal:fluid_duct_windowed"
   },
   "show_notification": true
 }

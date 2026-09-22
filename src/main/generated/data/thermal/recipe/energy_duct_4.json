@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": {
+      "tag": "c:glass_blocks"
+    },
+    "L": {
+      "tag": "c:ingots/lead"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "RRR",
+    "LGL",
+    "RRR"
+  ],
+  "result": {
+    "count": 4,
+    "item": "thermal:energy_duct"
+  },
+  "show_notification": true
+}
