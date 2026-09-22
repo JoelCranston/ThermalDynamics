@@ -142,3 +142,19 @@ plain `FriendlyByteBuf` to `RegistryFriendlyByteBuf` in every fluid packet, whic
 `runData` has not been run, so the generated loot, recipe and tag output is unverified; and the
 client pass (a duct network moving items and energy). Shapes:
 `../CoFHCore/docs/api-notes-1.21.1.md`.
+
+---
+
+## runData on 1.21.1 (2026-09-22)
+
+`./gradlew runData` had never worked on this branch. `build.gradle` declared `clientData()`,
+which ModDevGradle only offers from 1.21.4, so `prepareDataRun` failed. 1.21.1's run type is
+`data()`.
+
+Regenerating added the 8 recipe-unlock advancements that had never been committed (energy and
+fluid ducts, item buffer, the attachments), so those recipes never unlocked in the recipe book.
+The recipes only lose `"show_notification": true`, which is the default. Commit `c179946`.
+
+The same pass found a client crash in CoFHCore (`LevelRendererMixin`, stale `renderLevel`
+signature), since the data run is a client-dist launch. See `../CoFHCore/docs/progress-log.md`,
+"Phase A follow-up — runData".

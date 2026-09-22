@@ -8,21 +8,18 @@ already done and why.
 The plan for all four repos is `../CoFHCore/docs/port-plan.md`; this repo's steps are §4 (Phase 0,
 per repo), §5 A.2/A.3 (1.21.1) and §6 B.10 (26.1.2).
 
-Phase 0 and the A.1 source categories are **done** (2026-09-22) — see progress-log.md. The
-`../ThermalDynamicsForNeoForge` fork was cloned and diffed (37 files differ; the rest are
-byte-identical, so that diff is effectively the whole 1.21.1 port for this repo).
+Phase A (1.21.1) is **code-complete** on branch `1.21.1`: `./gradlew build` is clean,
+`verify_runserver.sh` reaches `Done`, and `runData` runs and matches the committed output
+(2026-09-22). This repo builds against whatever branch `../CoFHCore` has checked out, so
+**put CoFHCore on `1.21.1` to build or run it**. CoFHCore's working branch is `26.1.2` now.
 
-1. **Blocked on ThermalCore's Phase A.** `./gradlew compileJava` still fails inside
-   `:ThermalCore:compileJava`; nothing in this repo reaches javac until that lands.
-   Verified meanwhile with a standalone `javac` of `src/main/java` against
-   `build/moddev/artifacts/neoforge-21.1.251{,-merged}.jar` + CoFHCore's
-   `build/classes/java/main`: **every remaining error is an unresolved
-   `cofh.thermal.core` / `cofh.thermal.lib` symbol.** No Minecraft or NeoForge API is
-   unresolved.
-2. When ThermalCore compiles: run `./gradlew build`, then
-   `../Pyronetics/scripts/verify_runserver.sh`, then Joel's `runClient` check.
-3. Datagen has not been run yet (`./gradlew runData`) — the loot/recipe/tag providers were
-   ported blind. Re-run and diff `src/main/generated` once the build works.
+1. **Joel's `runClient` pass** (port plan §A.4). It is the one Phase A exit criterion left, and
+   everything client-side is unverified. See `../CoFHCore/docs/TODO.md` for the checklist and
+   for `MouseHandlerMixin`, a specific suspect.
+2. **Phase B (B.10) waits for CoFHCore's 26.1.2 port** (B.0-B.2 done there, ~1537 errors left).
+   Nothing to do here until CoFHCore compiles on 26.1.2. When it does, branch `26.1.2` from
+   `1.21.1`, switch the data run back to `clientData()`, and **regenerate `src/main/generated`
+   rather than hand-migrating it** (see the progress log's runData entry for why).
 
 ## Inbox
 
