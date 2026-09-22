@@ -38,10 +38,13 @@ before writing code against it.
 
 ## Current state
 
-Branch **`1.21.1`** (created 2026-09-21). `gradle.properties`/`build.gradle` still carry the
-old uncommitted 1.20.6 bump — **do not commit those values**; they are replaced wholesale by
-Phase 0.3/0.4 (ModDevGradle switch, `neoforge.mods.toml`) and Phase A.0 (1.21.1 values) from
-`../CoFHCore/docs/port-plan.md` §4.3–§4.4 and §5 A.0.
+Branch **`1.21.1`**. The build files are back at their committed 1.20.4 values (the stray
+uncommitted 1.20.6 bump was discarded on 2026-09-22 — it was never a target); Phase 0.3/0.4
+(ModDevGradle 2.0.147, `neoforge.mods.toml`) and A.0 (1.21.1 values) replace them wholesale,
+per `../CoFHCore/docs/port-plan.md` §4.3–§4.4 and §5 A.0.
+
+The family-wide `ResourceLocation` sweep (Phase A.1 category 2) has already been applied and
+committed here, ahead of this repo's own Phase A — it was cheaper to run once for all four.
 
 **Blocked on CoFHCore**: this repo's own Phase A starts only once `../CoFHCore` builds clean
 on 1.21.1 and boots headless (its `docs/TODO.md` tracks that). Then: apply Phase 0.3/0.4
