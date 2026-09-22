@@ -50,3 +50,68 @@ and the matching entry in `../CoFHCore/docs/progress-log.md` for what re-verific
 Branch `1.21.1` created today. `../ThermalDynamicsForNeoForge` (SPLIGAN's 1.21.1 port of this repo) is the Phase A
 worklist; `../Pyronetics` is the 26.1.2 reference. The uncommitted 1.20.6 build bump is left
 uncommitted on purpose.
+
+## Phase A — 1.21.1 source port (2026-09-22)
+
+`../ThermalDynamicsForNeoForge` cloned and diffed against this tree. Only **37 of 105
+files differ**, with no files on either side that the other lacks — their fork started
+from the same NeoForge 1.20.4 code, so that diff is effectively the complete 1.21.1
+worklist for this repo. It was applied hunk by hunk, adapted wherever it calls a CoFHCore
+method we named differently, and skipped wherever it is their own refactor rather than an
+API change.
+
+Every API shape was confirmed against the real jars before writing code:
+`build/moddev/artifacts/neoforge-21.1.251-sources.jar` and
+`~/.gradle/caches/.../neoforge-21.1.251-sources.jar`.
+
+One commit per root cause:
+
+- `3e37480` **mod metadata & bus.** `@Mod.EventBusSubscriber` →
+  `net.neoforged.fml.common.EventBusSubscriber`; `MenuScreens.register` (now `@Deprecated`
+  + `@ApiStatus.Internal`) → `RegisterMenuScreensEvent`. `DebugRenderer`'s annotation was
+  dead (no `@SubscribeEvent` methods) and is gone.
+- `5aa3da3` **ItemStack NBT → data components.** The redprint branch in
+  `DuctBlockEntity` goes through `ItemHelper.getCustomData`/`mutateCustomData`;
+  `CustomData.update` drops the component itself when the mutator writes nothing, which
+  replaces the old `setTag(null)` clean-up.
+- `1dbce2a` **vertex API.** `addVertex`/`setColor`, `endVertex()` deleted, and
+  `MultiBufferSource.immediateWithBuffers` now takes a
+  `SequencedMap<RenderType, ByteBufferBuilder>`.
+- `0d2b2a3` **persistence threading.** `HolderLookup.Provider` through `loadAdditional`/
+  `saveAdditional`/`getUpdateTag`, `INBTSerializable`, `SavedData#save` and its
+  `Factory` deserializer, and — because CoFHCore's `IFilter` and `SimpleItemInv` need it —
+  all the way through `IAttachment#read/write`, `IAttachmentFactory` and
+  `AttachmentRegistry`. `IConveyableData` keeps its `(Player, CompoundTag)` shape and
+  takes the lookup off `player.registryAccess()`.
+- `18c1bb8` **FluidStack.** `copyWithAmount`, `isSameFluidSameComponents`,
+  `parseOptional`/`saveOptional`. The GUI/state packets hand-encode fluid id + amount:
+  they travel on the plain scratch `FriendlyByteBuf` CoFHCore allocates and
+  `FluidStack.STREAM_CODEC` requires a `RegistryFriendlyByteBuf`. (SPLIGAN casts one to
+  the other, which would `ClassCastException` at runtime.)
+- `0ce6199` **events.** `TickEvent.LevelTickEvent` → `LevelTickEvent.Post`; the
+  `phase == END` guard disappears with it.
+- `aec2ccf` **block interaction.** `Block#use` → `useItemOn` returning
+  `ItemInteractionResult`. `useWithoutItem` is deliberately left alone — see the commit
+  message for why delegating into it would break placing a held block on a duct.
+- `997fc7c` **networking.** `CustomPacketPayload.Type` + `StreamCodec`,
+  `RegisterPayloadHandlersEvent`/`PayloadRegistrar`, `IPayloadContext`, and
+  `PacketDistributor`'s builder replaced by `sendToServer`/`sendToAllPlayers`/
+  CoFHCore's `Utils.sendNear`. The three blob-carrying payloads keep their
+  `FriendlyByteBuf` component via CoFHCore's `PayloadCodecs.REMAINING_BYTES`.
+- `224cf5c` **access transformers** re-synced byte-for-byte with CoFHCore's;
+  `createMinecraftArtifacts` passes here now.
+- `a6ab1c7` **geometry loader & datagen.** `IUnbakedGeometry#bake` and
+  `BlockModel.bakeFace` lost their `ResourceLocation`; `BlockElementFace` is a record;
+  `RegisterGeometryLoaders#register` takes a `ResourceLocation`; the loot and recipe
+  providers take the registry lookup; `Tags.Items.GLASS` → `GLASS_BLOCKS`.
+
+Not applicable in this repo: `Holder<MobEffect>`/`PotionContents`, enchantment datapack
+objects, recipe serializers, `IPlantable`/`PlantType`, mixins (none), Curios (no
+dependency). The resources sweep landed in Phase 0 (`dc73548`).
+
+**Compile status.** `./gradlew compileJava` still fails inside `:ThermalCore:compileJava`
+(ThermalCore is being ported in parallel), so this repo never reaches javac through
+Gradle. Verified instead with a standalone `javac` of all 105 sources against the
+1.21.1 jars plus CoFHCore's `build/classes/java/main`: **122 errors, every one of them an
+unresolved `cofh.thermal.core` / `cofh.thermal.lib` symbol.** Nothing in Minecraft or
+NeoForge is unresolved.
