@@ -116,7 +116,7 @@ public class FluidGrid extends Grid<FluidGrid, FluidGridNode> implements IFluidH
     private void renderUpdate() {
 
         prevRenderFluid = renderFluid;
-        renderFluid = new FluidStack(getFluid(), BUCKET_VOLUME);
+        renderFluid = getFluid().copyWithAmount(BUCKET_VOLUME);
 
         if (!FluidHelper.fluidsEqual(prevRenderFluid, renderFluid) || wasFilled && timeTracker.hasDelayPassed(world, 40) || needsUpdate) {
             if (!wasFilled && renderFluid.isEmpty()) {
@@ -143,7 +143,7 @@ public class FluidGrid extends Grid<FluidGrid, FluidGridNode> implements IFluidH
 
         storage.setBaseCapacity(Math.max(TANK_MEDIUM, getNodes().size() * NODE_CAPACITY));
         storage.setCapacity(this.getCapacity() + from.getCapacity());
-        storage.setFluid(new FluidStack(storage.getFluid(), this.getFluidAmount() + from.getFluidAmount()));
+        storage.setFluid(storage.getFluid().copyWithAmount(this.getFluidAmount() + from.getFluidAmount()));
 
         needsUpdate = true;
 
@@ -174,10 +174,10 @@ public class FluidGrid extends Grid<FluidGrid, FluidGridNode> implements IFluidH
 
         for (FluidGrid grid : others) {
             int gridNodes = grid.getNodes().size();
-            grid.setFluid(new FluidStack(getFluid(), (fluidPerNode * gridNodes)));
+            grid.setFluid(getFluid().copyWithAmount(fluidPerNode * gridNodes));
         }
         // First grid gets the extra. Why? Because there's always a first grid.
-        others.get(0).setFluid(new FluidStack(getFluid(), others.get(0).getFluid().getAmount() + remFluid));
+        others.get(0).setFluid(getFluid().copyWithAmount(others.get(0).getFluid().getAmount() + remFluid));
     }
 
     @Override

@@ -11,7 +11,9 @@ import cofh.lib.util.helpers.MathHelper;
 import cofh.thermal.dynamics.common.interblock.FluidServoInterblock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -117,7 +119,12 @@ public class FluidServoInterblockMenu extends ContainerMenuCoFH implements IFilt
         byte size = (byte) filter.getFluids().size();
         buffer.writeByte(size);
         for (int i = 0; i < size; ++i) {
-            buffer.writeFluidStack(getFilterStacks().get(i));
+            // FriendlyByteBuf#writeFluidStack/readFluidStack are gone and FluidStack's
+            // STREAM_CODEC needs a RegistryFriendlyByteBuf, which this scratch buffer is not.
+            // The filter GUI only renders fluid and amount (see CoFHCore's FluidFilterMenu).
+            FluidStack stack = getFilterStacks().get(i);
+            buffer.writeResourceLocation(BuiltInRegistries.FLUID.getKey(stack.getFluid()));
+            buffer.writeVarInt(stack.getAmount());
         }
         return buffer;
     }
@@ -128,7 +135,9 @@ public class FluidServoInterblockMenu extends ContainerMenuCoFH implements IFilt
         byte size = buffer.readByte();
         List<FluidStack> fluidStacks = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
-            fluidStacks.add(buffer.readFluidStack());
+            ResourceLocation fluidId = buffer.readResourceLocation();
+            int amount = buffer.readVarInt();
+            fluidStacks.add(new FluidStack(BuiltInRegistries.FLUID.get(fluidId), amount));
         }
         filterInventory.readFromSource(fluidStacks);
     }

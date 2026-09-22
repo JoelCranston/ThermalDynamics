@@ -117,7 +117,7 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
     // region NBT
     public FluidGridStorage read(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        setFluid(FluidStack.loadFluidStackFromNBT(nbt));
+        setFluid(FluidStack.parseOptional(registries, nbt));
         this.baseCapacity = nbt.getInt(TAG_CAPACITY);
 
         //        this.averageIn = nbt.getInt(TAG_TRACK_IN);
@@ -129,7 +129,12 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
 
     public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        fluid.writeToNBT(nbt);
+        // save(Provider) throws on an empty stack; saveOptional gives an empty compound instead,
+        // and merging that is a no-op - parseOptional reads it back as EMPTY. The keys stay flat
+        // in the tag, exactly as writeToNBT wrote them (see CoFHCore's FluidStorageCoFH).
+        if (fluid.saveOptional(registries) instanceof CompoundTag savedTag) {
+            nbt.merge(savedTag);
+        }
         nbt.putInt(TAG_CAPACITY, baseCapacity);
 
         //        nbt.putInt(TAG_TRACK_IN, averageIn);
@@ -174,16 +179,16 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
             if (fluid.isEmpty()) {
                 return Math.min(capacity, resource.getAmount());
             }
-            if (!fluid.isFluidEqual(resource)) {
+            if (!FluidStack.isSameFluidSameComponents(fluid, resource)) {
                 return 0;
             }
             return Math.min(capacity - fluid.getAmount(), resource.getAmount());
         }
         if (fluid.isEmpty()) {
-            setFluid(new FluidStack(resource, Math.min(capacity, resource.getAmount())));
+            setFluid(resource.copyWithAmount(Math.min(capacity, resource.getAmount())));
             return fluid.getAmount();
         }
-        if (!fluid.isFluidEqual(resource)) {
+        if (!FluidStack.isSameFluidSameComponents(fluid, resource)) {
             return 0;
         }
         if (fluid.getAmount() >= capacity) {
@@ -204,7 +209,7 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
     @Override
     public FluidStack drain(FluidStack resource, FluidAction action) {
 
-        if (resource.isEmpty() || !resource.isFluidEqual(fluid)) {
+        if (resource.isEmpty() || !FluidStack.isSameFluidSameComponents(resource, fluid)) {
             return FluidStack.EMPTY;
         }
         return drain(resource.getAmount(), action);
@@ -221,7 +226,7 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
         if (fluid.getAmount() < drained) {
             drained = fluid.getAmount();
         }
-        FluidStack stack = new FluidStack(fluid, drained);
+        FluidStack stack = fluid.copyWithAmount(drained);
         if (action.execute()) {
             fluid.shrink(drained);
             if (fluid.isEmpty()) {
