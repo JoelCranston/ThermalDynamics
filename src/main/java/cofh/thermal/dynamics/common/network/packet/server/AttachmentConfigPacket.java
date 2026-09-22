@@ -9,9 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
-
-import java.util.Optional;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class AttachmentConfigPacket {
 
@@ -22,15 +20,14 @@ public class AttachmentConfigPacket {
         return INSTANCE;
     }
 
-    public void handle(final AttachmentConfigPayload payload, final PlayPayloadContext context) {
+    public void handle(final AttachmentConfigPayload payload, final IPayloadContext context) {
 
-        context.workHandler().submitAsync(() -> {
+        context.enqueueWork(() -> {
 
-            Optional<Player> senderOptional = context.player();
-            if (senderOptional.isEmpty()) {
+            Player player = context.player();
+            if (player == null) {
                 return;
             }
-            Player player = senderOptional.get();
 
             Level world = player.level();
             if (!world.isLoaded(payload.pos())) {
@@ -48,7 +45,7 @@ public class AttachmentConfigPacket {
         if (attachment == null) {
             return;
         }
-        PacketDistributor.SERVER.noArg().send(new AttachmentConfigPayload(attachment.pos(), attachment.side(), attachment.getConfigPacket(new FriendlyByteBuf(Unpooled.buffer()))));
+        PacketDistributor.sendToServer(new AttachmentConfigPayload(attachment.pos(), attachment.side(), attachment.getConfigPacket(new FriendlyByteBuf(Unpooled.buffer()))));
     }
 
 }

@@ -5,7 +5,7 @@ import cofh.thermal.dynamics.common.network.data.client.GridDebugPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.*;
 
@@ -18,9 +18,9 @@ public class GridDebugPacket {
         return INSTANCE;
     }
 
-    public void handle(final GridDebugPayload payload, final PlayPayloadContext context) {
+    public void handle(final GridDebugPayload payload, final IPayloadContext context) {
 
-        context.workHandler().submitAsync(() -> {
+        context.enqueueWork(() -> {
 
             Map<UUID, Map<BlockPos, List<BlockPos>>> grids = new HashMap<>();
             int numGrids = payload.buf().readVarInt();
@@ -48,7 +48,7 @@ public class GridDebugPacket {
         if (buf == null) {
             return;
         }
-        PacketDistributor.ALL.noArg().send(new GridDebugPayload(buf));
+        PacketDistributor.sendToAllPlayers(new GridDebugPayload(buf));
     }
 
 }

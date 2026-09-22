@@ -12,8 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class AttachmentControlPacket {
 
@@ -24,9 +23,9 @@ public class AttachmentControlPacket {
         return INSTANCE;
     }
 
-    public void handle(final AttachmentControlPayload payload, final PlayPayloadContext context) {
+    public void handle(final AttachmentControlPayload payload, final IPayloadContext context) {
 
-        context.workHandler().submitAsync(() -> {
+        context.enqueueWork(() -> {
             Level world = ProxyUtils.getClientWorld();
 
             BlockPos pos = payload.pos();
@@ -44,6 +43,6 @@ public class AttachmentControlPacket {
         if (attachment == null || attachment.world() == null || attachment.world().isClientSide || !attachment.hasControlPacket()) {
             return;
         }
-        PacketDistributor.NEAR.with(Utils.createTargetPoint(attachment.world(), attachment.pos())).send(new AttachmentControlPayload(attachment.pos(), attachment.side(), attachment.getControlPacket(new FriendlyByteBuf(Unpooled.buffer()))));
+        Utils.sendNear(attachment.world(), attachment.pos(), new AttachmentControlPayload(attachment.pos(), attachment.side(), attachment.getControlPacket(new FriendlyByteBuf(Unpooled.buffer()))));
     }
 }
