@@ -49,10 +49,12 @@ public class DebugRenderer {
             .setWriteMaskState(COLOR_DEPTH_WRITE)
             .createCompositeState(false)
     );
-    private static final MultiBufferSource.BufferSource BUFFERS = MultiBufferSource.immediateWithBuffers(Util.make(new HashMap<>(), map -> {
-        map.put(laserBox, new BufferBuilder(laserBox.bufferSize()));
-        map.put(laserLine, new BufferBuilder(laserLine.bufferSize()));
-    }), new BufferBuilder(256));
+    // 1.21 split BufferBuilder into the (reusable) ByteBufferBuilder allocation and the
+    // per-batch BufferBuilder; immediateWithBuffers now takes a SequencedMap of the former.
+    private static final MultiBufferSource.BufferSource BUFFERS = MultiBufferSource.immediateWithBuffers(Util.make(new LinkedHashMap<RenderType, ByteBufferBuilder>(), map -> {
+        map.put(laserBox, new ByteBufferBuilder(laserBox.bufferSize()));
+        map.put(laserLine, new ByteBufferBuilder(laserLine.bufferSize()));
+    }), new ByteBufferBuilder(256));
 
     public static Map<UUID, Map<BlockPos, List<BlockPos>>> grids = new HashMap<>();
 
@@ -108,8 +110,8 @@ public class DebugRenderer {
                     Vector3f end = new Vector3f(edge.getX() + 0.5F, edge.getY() + 0.5F, edge.getZ() + 0.5F);
                     end.sub(sub);
 
-                    vb.vertex(pStack.last().pose(), start.x(), start.y(), start.z()).color(1F, 0F, 0F, 0.25F).endVertex();
-                    vb.vertex(pStack.last().pose(), end.x(), end.y(), end.z()).color(1F, 0F, 0F, 0.25F).endVertex();
+                    vb.addVertex(pStack.last().pose(), start.x(), start.y(), start.z()).setColor(1F, 0F, 0F, 0.25F);
+                    vb.addVertex(pStack.last().pose(), end.x(), end.y(), end.z()).setColor(1F, 0F, 0F, 0.25F);
                 }
             }
         }
@@ -122,35 +124,35 @@ public class DebugRenderer {
     // region HELPERS
     private static void bufferCuboidSolid(VertexConsumer builder, Matrix4f matrix, AABB c, float r, float g, float b, float a) {
 
-        builder.vertex(matrix, (float) c.minX, (float) c.maxY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.minY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.minX, (float) c.minY, (float) c.minZ).color(r, g, b, a).endVertex();
+        builder.addVertex(matrix, (float) c.minX, (float) c.maxY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.minY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.minX, (float) c.minY, (float) c.minZ).setColor(r, g, b, a);
 
-        builder.vertex(matrix, (float) c.minX, (float) c.minY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.minY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.minX, (float) c.maxY, (float) c.maxZ).color(r, g, b, a).endVertex();
+        builder.addVertex(matrix, (float) c.minX, (float) c.minY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.minY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.minX, (float) c.maxY, (float) c.maxZ).setColor(r, g, b, a);
 
-        builder.vertex(matrix, (float) c.minX, (float) c.minY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.minY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.minY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.minX, (float) c.minY, (float) c.maxZ).color(r, g, b, a).endVertex();
+        builder.addVertex(matrix, (float) c.minX, (float) c.minY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.minY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.minY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.minX, (float) c.minY, (float) c.maxZ).setColor(r, g, b, a);
 
-        builder.vertex(matrix, (float) c.minX, (float) c.maxY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.minX, (float) c.maxY, (float) c.minZ).color(r, g, b, a).endVertex();
+        builder.addVertex(matrix, (float) c.minX, (float) c.maxY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.minX, (float) c.maxY, (float) c.minZ).setColor(r, g, b, a);
 
-        builder.vertex(matrix, (float) c.minX, (float) c.minY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.minX, (float) c.maxY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.minX, (float) c.maxY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.minX, (float) c.minY, (float) c.minZ).color(r, g, b, a).endVertex();
+        builder.addVertex(matrix, (float) c.minX, (float) c.minY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.minX, (float) c.maxY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.minX, (float) c.maxY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.minX, (float) c.minY, (float) c.minZ).setColor(r, g, b, a);
 
-        builder.vertex(matrix, (float) c.maxX, (float) c.minY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.minZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.maxZ).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, (float) c.maxX, (float) c.minY, (float) c.maxZ).color(r, g, b, a).endVertex();
+        builder.addVertex(matrix, (float) c.maxX, (float) c.minY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.minZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.maxY, (float) c.maxZ).setColor(r, g, b, a);
+        builder.addVertex(matrix, (float) c.maxX, (float) c.minY, (float) c.maxZ).setColor(r, g, b, a);
     }
     // endregion
 }
