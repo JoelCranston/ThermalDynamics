@@ -49,8 +49,6 @@ public class DebugRenderer {
             .setWriteMaskState(COLOR_DEPTH_WRITE)
             .createCompositeState(false)
     );
-    // 1.21 split BufferBuilder into the (reusable) ByteBufferBuilder allocation and the
-    // per-batch BufferBuilder; immediateWithBuffers now takes a SequencedMap of the former.
     private static final MultiBufferSource.BufferSource BUFFERS = MultiBufferSource.immediateWithBuffers(Util.make(new LinkedHashMap<RenderType, ByteBufferBuilder>(), map -> {
         map.put(laserBox, new ByteBufferBuilder(laserBox.bufferSize()));
         map.put(laserLine, new ByteBufferBuilder(laserLine.bufferSize()));

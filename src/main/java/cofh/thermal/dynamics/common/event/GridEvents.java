@@ -15,8 +15,6 @@ public class GridEvents {
         NeoForge.EVENT_BUS.addListener(GridEvents::onChunkUnload);
     }
 
-    // TickEvent.LevelTickEvent split into LevelTickEvent.Pre/Post; subscribing to Post is what
-    // the old "phase == END" guard did, and the level replaces the removed side/level fields.
     private static void onWorldTick(LevelTickEvent.Post event) {
 
         if (event.getLevel().isClientSide()) {

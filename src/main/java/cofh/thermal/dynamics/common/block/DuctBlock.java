@@ -117,12 +117,7 @@ public class DuctBlock extends Block implements EntityBlock, SimpleWaterloggedBl
         return blockEntityType.get().create(pos, state);
     }
 
-    // Block#use split into useWithoutItem/useItemOn upstream. Everything here needs the held
-    // stack and the hand, so it all lives in useItemOn - which vanilla calls for every right
-    // click, empty hand included (ServerPlayerGameMode#useItemOn), with useWithoutItem only a
-    // MAIN_HAND fallback once useItemOn answers PASS_TO_DEFAULT_BLOCK_INTERACTION. Leaving
-    // useWithoutItem alone is what preserves the old behaviour: a right click holding some
-    // unrelated item still falls through to placing/using that item.
+    // Also called with an empty hand, so useWithoutItem is deliberately not overridden.
     @Override
     protected ItemInteractionResult useItemOn(ItemStack heldStack, BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
 

@@ -15,8 +15,6 @@ public class PacketHandler {
 
     public static void registerNetworking(final RegisterPayloadHandlersEvent event) {
 
-        // registrar() takes the NETWORK VERSION, not a namespace - the namespace comes from each
-        // payload's Type. Same "1" CoFHCore's PacketHandler uses.
         final PayloadRegistrar registrar = event.registrar("1");
 
         // SERVER
@@ -27,5 +25,4 @@ public class PacketHandler {
         registrar.playToClient(AttachmentControlPayload.TYPE, AttachmentControlPayload.STREAM_CODEC, AttachmentControlPacket.get()::handle);
         registrar.playToClient(GridDebugPayload.TYPE, GridDebugPayload.STREAM_CODEC, GridDebugPacket.get()::handle);
     }
-
 }

@@ -432,7 +432,6 @@ public class GridContainer extends SavedData implements IGridContainer {
     // region EVENT CALLBACKS
     public void onWorldTick() {
         // TODO do we want to pass this through to grids?
-        // The END-phase guard is gone: GridEvents listens for LevelTickEvent.Post now.
         try {
             for (Grid<?, ?> value : loadedGrids.values()) {
                 value.tick();

@@ -13,7 +13,6 @@ public class TDynLootTableProvider extends LootTableProviderCoFH {
 
     public TDynLootTableProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
 
-        // A SubProviderEntry's factory takes the registries now (loot references registry objects).
         super(output, List.of(
                 new SubProviderEntry(TDynBlockLootTables::new, LootContextParamSets.BLOCK)
         ), registries);

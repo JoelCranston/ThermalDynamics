@@ -95,8 +95,6 @@ public class ThermalDynamics {
         DebugRenderer.register();
     }
 
-    // MenuScreens.register is @Deprecated/internal since 1.21 - NeoForge's RegisterMenuScreensEvent
-    // is the supported hook and fires on the mod bus before the client setup phase.
     private void menuScreenSetup(final RegisterMenuScreensEvent event) {
 
         event.register(ITEM_BUFFER_CONTAINER.get(), ItemBufferScreen::new);

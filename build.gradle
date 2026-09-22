@@ -6,7 +6,6 @@ plugins {
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'com.modrinth.minotaur' version "2.+"
 
-    // ModDevGradle (replaced NeoGradle userdev 7.1.38 on 2026-09-22 - see ../CoFHCore/docs/port-plan.md §1.4/§4.3)
     id 'net.neoforged.moddev' version '2.0.147'
 }
 
@@ -20,8 +19,7 @@ java {
 
 sourceSets.main.resources.srcDirs += "src/main/generated"
 
-// javac's default -Xmaxerrs 100 caps error output, which hides the true error count during a
-// version hop. Raised so `compileJava` always shows the full list.
+// Report every compile error, not just the first 100.
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs << "-Xmaxerrs" << "100000"
     options.encoding = 'UTF-8'
@@ -40,9 +38,6 @@ println "Using NeoForge: ${neo_version}, for Minecraft: ${mc_version}"
 neoForge {
     version = project.neo_version
 
-    // Fail the build on access transformer lines whose targets no longer exist - exactly what a
-    // version hop needs to surface. The file at the default path
-    // (src/main/resources/META-INF/accesstransformer.cfg) is picked up automatically.
     validateAccessTransformers = true
 
     runs {
@@ -60,7 +55,6 @@ neoForge {
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         data {
-            // 1.21.1 has the plain data run type; 26.1 (1.21.4+) replaces it with clientData().
             data()
             programArguments.addAll '--mod', project.mod_id, '--all', '--output',
                     file('src/main/generated/').getAbsolutePath(), '--existing',
@@ -128,7 +122,6 @@ configurations {
     shadow
     implementation.extendsFrom shadow
 
-    // Runtime-only optional mods go here so they are never published as a dependency.
     runtimeClasspath.extendsFrom localRuntime
 }
 
@@ -140,7 +133,6 @@ repositories {
 }
 
 dependencies {
-    // The Minecraft/NeoForge dependency is contributed by the `neoForge` block above.
     implementation("com.teamcofh:cofh_core:${mc_version}-${cofh_core_version}+")
     implementation("com.teamcofh:thermal_core:${mc_version}-${thermal_core_version}+")
 

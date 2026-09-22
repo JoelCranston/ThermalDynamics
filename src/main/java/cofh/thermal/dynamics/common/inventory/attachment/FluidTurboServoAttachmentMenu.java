@@ -103,9 +103,7 @@ public class FluidTurboServoAttachmentMenu extends AttachmentMenu implements IFi
         byte size = (byte) filter.getFluids().size();
         buffer.writeByte(size);
         for (int i = 0; i < size; ++i) {
-            // FriendlyByteBuf#writeFluidStack/readFluidStack are gone and FluidStack's
-            // STREAM_CODEC needs a RegistryFriendlyByteBuf, which this scratch buffer is not.
-            // The filter GUI only renders fluid and amount (see CoFHCore's FluidFilterMenu).
+            // Not a RegistryFriendlyByteBuf, so FluidStack.STREAM_CODEC can't be used here.
             FluidStack stack = getFilterStacks().get(i);
             buffer.writeResourceLocation(BuiltInRegistries.FLUID.getKey(stack.getFluid()));
             buffer.writeVarInt(stack.getAmount());

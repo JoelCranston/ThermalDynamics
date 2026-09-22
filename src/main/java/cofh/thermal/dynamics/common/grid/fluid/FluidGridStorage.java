@@ -129,9 +129,7 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
 
     public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        // save(Provider) throws on an empty stack; saveOptional gives an empty compound instead,
-        // and merging that is a no-op - parseOptional reads it back as EMPTY. The keys stay flat
-        // in the tag, exactly as writeToNBT wrote them (see CoFHCore's FluidStorageCoFH).
+        // save() throws on an empty stack.
         if (fluid.saveOptional(registries) instanceof CompoundTag savedTag) {
             nbt.merge(savedTag);
         }

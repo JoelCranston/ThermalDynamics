@@ -91,9 +91,7 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
     public FriendlyByteBuf getStatePacket(FriendlyByteBuf buffer) {
 
         renderFluid = getGrid().getRenderFluid();
-        // FriendlyByteBuf#writeFluidStack/readFluidStack are gone; FluidStack's STREAM_CODEC needs
-        // a RegistryFriendlyByteBuf and this is the plain scratch buffer TileStatePacket hands out.
-        // The fluid id and amount are all the window model renders (see CoFHCore's FluidFilterMenu).
+        // Not a RegistryFriendlyByteBuf, so FluidStack.STREAM_CODEC can't be used here.
         buffer.writeResourceLocation(BuiltInRegistries.FLUID.getKey(renderFluid.getFluid()));
         buffer.writeVarInt(renderFluid.getAmount());
 

@@ -176,8 +176,6 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
 
         if (side != null && attachments[side.ordinal()] instanceof IConveyableData conveyableData) {
             if (!ItemHelper.hasCustomData(stack)) {
-                // CustomData.update removes the component again when the mutator writes nothing,
-                // so the old "wrote an empty tag, put it back to null" branch is just "still absent".
                 ItemHelper.mutateCustomData(stack, tag -> conveyableData.writeConveyableData(player, tag));
                 if (!ItemHelper.hasCustomData(stack)) {
                     return false;

@@ -43,9 +43,6 @@ public class DuctModel implements IUnbakedGeometry<DuctModel> {
         this.parts = parts;
     }
 
-    // 1.21: IUnbakedGeometry#bake dropped the ResourceLocation parameter and
-    // BlockModel.bakeFace dropped it too, so it disappears from the private helpers as well.
-    // BlockElementFace is a record now - texture is an accessor.
     @Override
     public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides) {
 
