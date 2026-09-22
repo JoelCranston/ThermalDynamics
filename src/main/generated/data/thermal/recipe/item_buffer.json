@@ -21,7 +21,7 @@
     "IQI"
   ],
   "result": {
-    "item": "thermal:item_buffer"
+    "id": "thermal:item_buffer"
   },
   "show_notification": true
 }

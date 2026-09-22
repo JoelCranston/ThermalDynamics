@@ -21,7 +21,7 @@
   ],
   "result": {
     "count": 2,
-    "item": "thermal:servo_attachment"
+    "id": "thermal:servo_attachment"
   },
   "show_notification": true
 }

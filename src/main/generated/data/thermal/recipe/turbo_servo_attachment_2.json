@@ -21,7 +21,7 @@
   ],
   "result": {
     "count": 2,
-    "item": "thermal:turbo_servo_attachment"
+    "id": "thermal:turbo_servo_attachment"
   },
   "show_notification": true
 }

@@ -19,7 +19,7 @@
   ],
   "result": {
     "count": 4,
-    "item": "thermal:energy_duct"
+    "id": "thermal:energy_duct"
   },
   "show_notification": true
 }
