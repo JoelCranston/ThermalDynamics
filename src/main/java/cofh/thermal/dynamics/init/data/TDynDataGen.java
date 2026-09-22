@@ -27,8 +27,8 @@ public class TDynDataGen {
         gen.addProvider(event.includeServer(), blockTags);
         gen.addProvider(event.includeServer(), new TDynTagsProvider.Item(output, event.getLookupProvider(), blockTags.contentsGetter(), exFileHelper));
 
-        gen.addProvider(event.includeServer(), new TDynLootTableProvider(output));
-        gen.addProvider(event.includeServer(), new TDynRecipeProvider(output));
+        gen.addProvider(event.includeServer(), new TDynLootTableProvider(output, event.getLookupProvider()));
+        gen.addProvider(event.includeServer(), new TDynRecipeProvider(output, event.getLookupProvider()));
 
         gen.addProvider(event.includeClient(), new TDynItemModelProvider(output, exFileHelper));
     }

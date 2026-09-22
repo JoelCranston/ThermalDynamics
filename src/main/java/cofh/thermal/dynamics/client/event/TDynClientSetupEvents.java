@@ -1,6 +1,7 @@
 package cofh.thermal.dynamics.client.event;
 
 import cofh.thermal.dynamics.client.model.DuctModel;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -21,7 +22,7 @@ public class TDynClientSetupEvents {
     @SubscribeEvent
     public static void registerModels(final RegisterGeometryLoaders event) {
 
-        event.register("duct", new DuctModel.Loader());
+        event.register(ResourceLocation.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "duct"), new DuctModel.Loader());
     }
 
     //    @SubscribeEvent
