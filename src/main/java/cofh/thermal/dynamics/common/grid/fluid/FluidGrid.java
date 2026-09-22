@@ -6,6 +6,7 @@ import cofh.thermal.dynamics.api.helper.GridHelper;
 import cofh.thermal.dynamics.common.block.entity.duct.DuctBlockEntity;
 import cofh.thermal.dynamics.common.grid.Grid;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -180,18 +181,18 @@ public class FluidGrid extends Grid<FluidGrid, FluidGridNode> implements IFluidH
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider registries) {
 
-        CompoundTag tag = super.serializeNBT();
-        storage.write(tag);
+        CompoundTag tag = super.serializeNBT(registries);
+        storage.write(registries, tag);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        super.deserializeNBT(nbt);
-        storage.deserializeNBT(nbt);
+        super.deserializeNBT(registries, nbt);
+        storage.deserializeNBT(registries, nbt);
     }
 
     @Override

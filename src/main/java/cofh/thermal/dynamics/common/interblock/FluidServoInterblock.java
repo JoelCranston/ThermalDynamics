@@ -5,6 +5,7 @@ import cofh.core.util.filter.IFilter;
 import cofh.thermal.dynamics.common.inventory.interblock.FluidServoInterblockMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -29,18 +30,18 @@ public class FluidServoInterblock implements MenuProvider {
         this.side = side;
     }
 
-    public FluidServoInterblock read(CompoundTag nbt) {
+    public FluidServoInterblock read(HolderLookup.Provider registries, CompoundTag nbt) {
 
         if (nbt.isEmpty()) {
             return this;
         }
-        filter.read(nbt);
+        filter.read(registries, nbt);
         return this;
     }
 
-    public CompoundTag write(CompoundTag nbt) {
+    public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        filter.write(nbt);
+        filter.write(registries, nbt);
         return nbt;
     }
 

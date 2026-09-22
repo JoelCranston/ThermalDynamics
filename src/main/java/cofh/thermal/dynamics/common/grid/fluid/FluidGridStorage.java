@@ -1,5 +1,6 @@
 package cofh.thermal.dynamics.common.grid.fluid;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -114,7 +115,7 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
     }
 
     // region NBT
-    public FluidGridStorage read(CompoundTag nbt) {
+    public FluidGridStorage read(HolderLookup.Provider registries, CompoundTag nbt) {
 
         setFluid(FluidStack.loadFluidStackFromNBT(nbt));
         this.baseCapacity = nbt.getInt(TAG_CAPACITY);
@@ -126,7 +127,7 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
         return this;
     }
 
-    public CompoundTag write(CompoundTag nbt) {
+    public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
 
         fluid.writeToNBT(nbt);
         nbt.putInt(TAG_CAPACITY, baseCapacity);
@@ -138,15 +139,15 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider registries) {
 
-        return write(new CompoundTag());
+        return write(registries, new CompoundTag());
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        read(nbt);
+        read(registries, nbt);
     }
     // endregion
 

@@ -3,6 +3,7 @@ package cofh.thermal.dynamics.common.attachment;
 import cofh.thermal.dynamics.api.grid.IDuct;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 
@@ -35,13 +36,13 @@ public class EmptyAttachment implements IAttachment {
     }
 
     @Override
-    public IAttachment read(CompoundTag nbt) {
+    public IAttachment read(HolderLookup.Provider registries, CompoundTag nbt) {
 
         return INSTANCE;
     }
 
     @Override
-    public CompoundTag write(CompoundTag nbt) {
+    public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
 
         return nbt;
     }

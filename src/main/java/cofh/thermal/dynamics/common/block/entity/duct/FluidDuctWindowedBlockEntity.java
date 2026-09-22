@@ -7,6 +7,8 @@ import cofh.lib.api.block.entity.IPacketHandlerTile;
 import cofh.thermal.dynamics.api.grid.IGridHostLuminous;
 import cofh.thermal.dynamics.api.grid.IGridHostUpdateable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -53,20 +55,20 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
 
     // region NBT
     @Override
-    public void saveAdditional(CompoundTag tag) {
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 
         if (!renderFluid.isEmpty()) {
-            tag.put(TAG_RENDER_FLUID, renderFluid.writeToNBT(new CompoundTag()));
+            tag.put(TAG_RENDER_FLUID, renderFluid.save(registries));
         }
-        super.saveAdditional(tag);
+        super.saveAdditional(tag, registries);
     }
 
     @Override
-    public void load(CompoundTag tag) {
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 
-        super.load(tag);
+        super.loadAdditional(tag, registries);
 
-        renderFluid = FluidStack.loadFluidStackFromNBT(tag.getCompound(TAG_RENDER_FLUID));
+        renderFluid = FluidStack.parseOptional(registries, tag.getCompound(TAG_RENDER_FLUID));
     }
     // endregion
 
@@ -79,9 +81,9 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
 
-        return saveWithoutMetadata();
+        return saveWithoutMetadata(registries);
     }
 
     // STATE
@@ -89,7 +91,11 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
     public FriendlyByteBuf getStatePacket(FriendlyByteBuf buffer) {
 
         renderFluid = getGrid().getRenderFluid();
-        buffer.writeFluidStack(renderFluid);
+        // FriendlyByteBuf#writeFluidStack/readFluidStack are gone; FluidStack's STREAM_CODEC needs
+        // a RegistryFriendlyByteBuf and this is the plain scratch buffer TileStatePacket hands out.
+        // The fluid id and amount are all the window model renders (see CoFHCore's FluidFilterMenu).
+        buffer.writeResourceLocation(BuiltInRegistries.FLUID.getKey(renderFluid.getFluid()));
+        buffer.writeVarInt(renderFluid.getAmount());
 
         super.getStatePacket(buffer);
 
@@ -100,7 +106,7 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
     public void handleStatePacket(FriendlyByteBuf buffer) {
 
         int prevLight = getLightValue();
-        renderFluid = buffer.readFluidStack();
+        renderFluid = new FluidStack(BuiltInRegistries.FLUID.get(buffer.readResourceLocation()), buffer.readVarInt());
 
         if (prevLight != getLightValue()) {
             level.getChunkSource().getLightEngine().checkBlock(worldPosition);

@@ -19,6 +19,7 @@ import cofh.thermal.dynamics.common.grid.Grid;
 import cofh.thermal.dynamics.common.grid.GridNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -132,7 +133,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
         if (attachments[side.ordinal()] != EmptyAttachment.INSTANCE) {
             return false;
         }
-        IAttachment attachment = AttachmentRegistry.getAttachment(type, new CompoundTag(), this, side);
+        IAttachment attachment = AttachmentRegistry.getAttachment(type, level.registryAccess(), new CompoundTag(), this, side);
         if (attachment == null || attachment == EmptyAttachment.INSTANCE) {
             return false;
         }
@@ -336,7 +337,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
         CompoundTag tag = new CompoundTag();
         for (int i = 0; i < 6; ++i) {
             CompoundTag attachmentTag = new CompoundTag();
-            attachments[i].write(attachmentTag);
+            attachments[i].write(level.registryAccess(), attachmentTag);
             if (!attachmentTag.isEmpty()) {
                 tag.put(TAG_ATTACHMENT + i, attachmentTag);
             }
@@ -358,7 +359,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
             for (int i = 0; i < 6; ++i) {
                 if (tag.contains(TAG_ATTACHMENT + i)) {
                     CompoundTag attachmentTag = tag.getCompound(TAG_ATTACHMENT + i);
-                    attachments[i] = AttachmentRegistry.getAttachment(attachmentTag.getString(TAG_TYPE), attachmentTag, this, DIRECTIONS[i]);
+                    attachments[i] = AttachmentRegistry.getAttachment(attachmentTag.getString(TAG_TYPE), level.registryAccess(), attachmentTag, this, DIRECTIONS[i]);
                 } else {
                     attachments[i] = EmptyAttachment.INSTANCE;
                 }
@@ -370,16 +371,16 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
 
     // region NBT
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
 
         modelData.setNeedsRefresh();
-        return saveWithoutMetadata();
+        return saveWithoutMetadata(registries);
     }
 
     @Override
-    public void load(CompoundTag tag) {
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 
-        super.load(tag);
+        super.loadAdditional(tag, registries);
 
         redstonePower = tag.getInt(TAG_RS_POWER);
 
@@ -392,7 +393,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
         for (int i = 0; i < 6; ++i) {
             if (tag.contains(TAG_ATTACHMENT + i)) {
                 CompoundTag attachmentTag = tag.getCompound(TAG_ATTACHMENT + i);
-                attachments[i] = AttachmentRegistry.getAttachment(attachmentTag.getString(TAG_TYPE), attachmentTag, this, DIRECTIONS[i]);
+                attachments[i] = AttachmentRegistry.getAttachment(attachmentTag.getString(TAG_TYPE), registries, attachmentTag, this, DIRECTIONS[i]);
             } else {
                 attachments[i] = EmptyAttachment.INSTANCE;
             }
@@ -400,9 +401,9 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 
-        super.saveAdditional(tag);
+        super.saveAdditional(tag, registries);
 
         tag.putInt(TAG_RS_POWER, redstonePower);
 
@@ -414,7 +415,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
 
         for (int i = 0; i < 6; ++i) {
             CompoundTag attachmentTag = new CompoundTag();
-            attachments[i].write(attachmentTag);
+            attachments[i].write(registries, attachmentTag);
             if (!attachmentTag.isEmpty()) {
                 tag.put(TAG_ATTACHMENT + i, attachmentTag);
             }

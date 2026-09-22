@@ -5,6 +5,7 @@ import cofh.lib.util.helpers.MathHelper;
 import cofh.thermal.dynamics.api.grid.IDuct;
 import cofh.thermal.dynamics.common.inventory.attachment.EnergyLimiterAttachmentMenu;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -30,7 +31,7 @@ import static cofh.thermal.dynamics.init.registries.TDynIDs.ID_ENERGY_LIMITER_AT
 
 public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllableAttachment, IConveyableData, MenuProvider {
 
-    public static final IAttachmentFactory<IAttachment> FACTORY = (nbt, duct, side) -> new EnergyLimiterAttachment(duct, side).read(nbt);
+    public static final IAttachmentFactory<IAttachment> FACTORY = (registries, nbt, duct, side) -> new EnergyLimiterAttachment(duct, side).read(registries, nbt);
 
     public static final Component DISPLAY_NAME = Component.translatable("attachment.thermal.energy_limiter");
 
@@ -78,7 +79,7 @@ public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllab
     }
 
     @Override
-    public IAttachment read(CompoundTag nbt) {
+    public IAttachment read(HolderLookup.Provider registries, CompoundTag nbt) {
 
         if (nbt.isEmpty()) {
             return this;
@@ -92,7 +93,7 @@ public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllab
     }
 
     @Override
-    public CompoundTag write(CompoundTag nbt) {
+    public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
 
         nbt.putString(TAG_TYPE, ENERGY_LIMITER);
 

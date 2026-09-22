@@ -3,6 +3,7 @@ package cofh.thermal.dynamics.common.attachment;
 import cofh.thermal.dynamics.api.grid.IDuct;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.Map;
@@ -12,23 +13,23 @@ import static cofh.thermal.dynamics.init.registries.TDynIDs.*;
 
 public class AttachmentRegistry {
 
-    public static final IAttachmentFactory<IAttachment> FILTER_FACTORY = ((nbt, duct, side) -> {
+    public static final IAttachmentFactory<IAttachment> FILTER_FACTORY = ((registries, nbt, duct, side) -> {
         if (duct.getGridType() == FLUID_GRID.get()) {
-            return new FluidFilterAttachment(duct, side).read(nbt);
+            return new FluidFilterAttachment(duct, side).read(registries, nbt);
         }
         return EmptyAttachment.INSTANCE;
     });
 
-    public static final IAttachmentFactory<IAttachment> SERVO_FACTORY = ((nbt, duct, side) -> {
+    public static final IAttachmentFactory<IAttachment> SERVO_FACTORY = ((registries, nbt, duct, side) -> {
         if (duct.getGridType() == FLUID_GRID.get()) {
-            return new FluidServoAttachment(duct, side).read(nbt);
+            return new FluidServoAttachment(duct, side).read(registries, nbt);
         }
         return EmptyAttachment.INSTANCE;
     });
 
-    public static final IAttachmentFactory<IAttachment> TURBO_SERVO_FACTORY = ((nbt, duct, side) -> {
+    public static final IAttachmentFactory<IAttachment> TURBO_SERVO_FACTORY = ((registries, nbt, duct, side) -> {
         if (duct.getGridType() == FLUID_GRID.get()) {
-            return new FluidTurboServoAttachment(duct, side).read(nbt);
+            return new FluidTurboServoAttachment(duct, side).read(registries, nbt);
         }
         return EmptyAttachment.INSTANCE;
     });
@@ -51,10 +52,10 @@ public class AttachmentRegistry {
         return true;
     }
 
-    public static IAttachment getAttachment(String type, CompoundTag nbt, IDuct<?, ?> duct, Direction side) {
+    public static IAttachment getAttachment(String type, HolderLookup.Provider registries, CompoundTag nbt, IDuct<?, ?> duct, Direction side) {
 
         if (ATTACHMENT_FACTORY_MAP.containsKey(type)) {
-            return ATTACHMENT_FACTORY_MAP.get(type).createAttachment(nbt, duct, side);
+            return ATTACHMENT_FACTORY_MAP.get(type).createAttachment(registries, nbt, duct, side);
         }
         return EmptyAttachment.INSTANCE;
     }

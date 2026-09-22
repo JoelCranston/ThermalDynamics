@@ -15,6 +15,7 @@ import io.netty.buffer.Unpooled;
 import net.covers1624.quack.collection.ColUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -60,10 +61,10 @@ public class GridContainer extends SavedData implements IGridContainer {
         this.world = world;
     }
 
-    private GridContainer(ServerLevel world, CompoundTag tag) {
+    private GridContainer(ServerLevel world, CompoundTag tag, HolderLookup.Provider registries) {
 
         this.world = world;
-        load(tag);
+        load(tag, registries);
     }
 
     public static GridContainer getInstance(ServerLevel level) {
@@ -71,7 +72,7 @@ public class GridContainer extends SavedData implements IGridContainer {
         return level.getDataStorage().computeIfAbsent(
                 new Factory<>(
                         () -> new GridContainer(level),
-                        t -> new GridContainer(level, t)
+                        (t, registries) -> new GridContainer(level, t, registries)
                 ),
                 ID_THERMAL_DYNAMICS + "_grids"
         );
@@ -496,7 +497,7 @@ public class GridContainer extends SavedData implements IGridContainer {
         return unsafeCast(grid);
     }
 
-    private void load(CompoundTag tag) {
+    private void load(CompoundTag tag, HolderLookup.Provider registries) {
 
         ListTag nbt = tag.getList("grids", CompoundTag.TAG_COMPOUND);
         assert grids.isEmpty();
@@ -510,7 +511,7 @@ public class GridContainer extends SavedData implements IGridContainer {
                 LOGGER.error("Failed to load Grid {} with type {} in world {}. GridType is no longer registered, it will be removed from the world.", id, gridTypeName, world.dimension().location());
                 continue;
             }
-            deserializeGrid(gridTag, id, unsafeCast(gridType));
+            deserializeGrid(gridTag, registries, id, unsafeCast(gridType));
         }
         if (DEBUG) {
             LOGGER.info("Loaded {} grids for {}.", grids.size(), world.dimension().location());
@@ -518,7 +519,7 @@ public class GridContainer extends SavedData implements IGridContainer {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
 
         ListTag grids = new ListTag();
         for (Map.Entry<UUID, Grid<?, ?>> entry : this.grids.entrySet()) {
@@ -526,7 +527,7 @@ public class GridContainer extends SavedData implements IGridContainer {
             CompoundTag gridTag = new CompoundTag();
             gridTag.putUUID("id", entry.getKey());
             gridTag.putString("type", ThermalDynamics.GRID_TYPE_REGISTRY.getKey(grid.getGridType()).toString());
-            gridTag.merge(grid.serializeNBT());
+            gridTag.merge(grid.serializeNBT(registries));
             grids.add(gridTag);
         }
         tag.put("grids", grids);
@@ -539,10 +540,10 @@ public class GridContainer extends SavedData implements IGridContainer {
         return true; // Always save this SavedData
     }
 
-    private <G extends Grid<G, N>, N extends GridNode<G>> void deserializeGrid(CompoundTag tag, UUID id, IGridType<G> gridType) {
+    private <G extends Grid<G, N>, N extends GridNode<G>> void deserializeGrid(CompoundTag tag, HolderLookup.Provider registries, UUID id, IGridType<G> gridType) {
 
         G grid = createAndAddGrid(id, gridType, false);
-        grid.deserializeNBT(tag);
+        grid.deserializeNBT(registries, tag);
 
         for (N node : grid.nodeGraph.nodes()) {
             addGridLookup(grid, node.getPos());

@@ -3,6 +3,7 @@ package cofh.thermal.dynamics.common.attachment;
 import cofh.thermal.dynamics.api.grid.IDuct;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -31,21 +32,21 @@ public interface IAttachment extends INBTSerializable<CompoundTag> {
 
     }
 
-    IAttachment read(CompoundTag nbt);
+    IAttachment read(HolderLookup.Provider registries, CompoundTag nbt);
 
     // Attachments MUST write their type to the NBT. Reading is optional.
-    CompoundTag write(CompoundTag nbt);
+    CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt);
 
     @Override
-    default CompoundTag serializeNBT() {
+    default CompoundTag serializeNBT(HolderLookup.Provider registries) {
 
-        return write(new CompoundTag());
+        return write(registries, new CompoundTag());
     }
 
     @Override
-    default void deserializeNBT(CompoundTag nbt) {
+    default void deserializeNBT(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        read(nbt);
+        read(registries, nbt);
     }
 
     default void tick() {

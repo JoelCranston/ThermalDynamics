@@ -7,6 +7,7 @@ import cofh.lib.util.helpers.MathHelper;
 import cofh.thermal.dynamics.api.grid.IDuct;
 import cofh.thermal.dynamics.common.inventory.attachment.FluidTurboServoAttachmentMenu;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -87,26 +88,26 @@ public class FluidTurboServoAttachment implements IFilterableAttachment, IRedsto
     }
 
     @Override
-    public IAttachment read(CompoundTag nbt) {
+    public IAttachment read(HolderLookup.Provider registries, CompoundTag nbt) {
 
         if (nbt.isEmpty()) {
             return this;
         }
         amountTransfer = nbt.getInt(TAG_AMOUNT);
 
-        filter.read(nbt);
+        filter.read(registries, nbt);
         rsControl.read(nbt);
 
         return this;
     }
 
     @Override
-    public CompoundTag write(CompoundTag nbt) {
+    public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
 
         nbt.putString(TAG_TYPE, TURBO_SERVO);
         nbt.putInt(TAG_AMOUNT, amountTransfer);
 
-        filter.write(nbt);
+        filter.write(registries, nbt);
         rsControl.write(nbt);
 
         return nbt;
@@ -246,7 +247,7 @@ public class FluidTurboServoAttachment implements IFilterableAttachment, IRedsto
     public void readConveyableData(Player player, CompoundTag tag) {
 
         rsControl.readSettings(tag);
-        filter.read(tag);
+        filter.read(player.registryAccess(), tag);
 
         onControlUpdate();
     }
@@ -255,7 +256,7 @@ public class FluidTurboServoAttachment implements IFilterableAttachment, IRedsto
     public void writeConveyableData(Player player, CompoundTag tag) {
 
         rsControl.writeSettings(tag);
-        filter.write(tag);
+        filter.write(player.registryAccess(), tag);
     }
     // endregion
 
