@@ -50,7 +50,7 @@ Branch **`1.21.1`**, ModDevGradle 2.0.147, `META-INF/neoforge.mods.toml`.
 This repo was ported **source-level, in parallel with ThermalCore**, against the 21.1.251
 sources jar and CoFHCore's already-ported code — it could not compile at the time, since its
 build `includeBuild`s ThermalCore. It compiled clean on the first attempt once ThermalCore
-landed, and `verify_runserver.sh` reaches `Done (…)` with no data errors.
+landed, and `../CoFHCore/scripts/verify_runserver.sh` reaches `Done (…)` with no data errors.
 
 Only 37 of 105 files differed from SPLIGAN's `ThermalDynamicsForNeoForge`, so that diff was
 effectively the whole worklist — but **not for the fluid packets**: their `registryBuf(buffer)`
