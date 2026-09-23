@@ -8,23 +8,19 @@ already done and why.
 The plan for all four repos is `../CoFHCore/docs/port-plan.md`; this repo's steps are §4 (Phase 0,
 per repo), §5 A.2/A.3 (1.21.1) and §6 B.10 (26.1.2).
 
-Phase A (1.21.1) is **code-complete** on branch `1.21.1`: `./gradlew build` is clean,
-`verify_runserver.sh` reaches `Done`, and `runData` runs and matches the committed output
-(2026-09-22). This repo builds against whatever branch `../CoFHCore` has checked out, so
-**put CoFHCore on `1.21.1` to build or run it**. CoFHCore's working branch is `26.1.2` now.
+Phase B (26.1.2) is done for this repo on branch `26.1.2` (2026-09-22): `./gradlew build` is clean,
+`runData` matches the committed output, and the dedicated server boots to `Done` with 1770 recipes
+and no data errors. Shapes, decisions and forced behaviour changes are in
+`../CoFHCore/docs/api-notes-26.1.2.md` ("B.10 ThermalExpansion and ThermalDynamics") and
+`../CoFHCore/docs/TODO.md` (Inbox, "B.10 ThermalExpansion / ThermalDynamics behaviour changes"). This
+repo builds against whatever branches `../CoFHCore` and `../ThermalCore` have checked out; all are on
+`26.1.2` now.
 
-1. **Joel's `runClient` pass** (port plan §A.4). It is the one Phase A exit criterion left, and
-   everything client-side is unverified. See `../CoFHCore/docs/TODO.md` for the checklist and
-   for `MouseHandlerMixin`, a specific suspect.
-2. **Phase B (B.10) waits for CoFHCore's 26.1.2 port** (B.0-B.5 done there, ~895 errors left: recipes, client, mixins).
-   **Before starting B.10, read `../CoFHCore/docs/TODO.md`'s "B.10 inherits from B.3/B.4/B.5"
-   notes.** They list what changes here: the persistence bridge, capability registration on the new
-   transfer API, armour and tool material records, the `ENCHANTABLE` component, the new
-   `neighborChanged` without a neighbour position (TD's ducts), and more. The shapes are in
-   `../CoFHCore/docs/api-notes-26.1.2.md`.
-   Nothing to do here until CoFHCore compiles on 26.1.2. When it does, branch `26.1.2` from
-   `1.21.1`, switch the data run back to `clientData()`, and **regenerate `src/main/generated`
-   rather than hand-migrating it** (see the progress log's runData entry for why).
+1. **Joel's `runClient` pass** (port plan §A.4 / §B.10) — everything client-side is unverified on both
+   hops. See `../CoFHCore/docs/TODO.md` for the checklist.
+2. **B.4 at runtime**: the transfer-API adapters (servos, limiters, filters, grid storages / machine
+   handlers) have only been compiled and booted; test with a pipe mod or a GameTest, including an
+   aborted simulation.
 
 ## Inbox
 
