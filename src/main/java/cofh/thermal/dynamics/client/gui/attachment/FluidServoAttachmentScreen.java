@@ -8,7 +8,7 @@ import cofh.core.client.gui.element.SimpleTooltip;
 import cofh.core.client.gui.element.panel.RSControlPanel;
 import cofh.thermal.dynamics.common.attachment.FluidServoAttachment;
 import cofh.thermal.dynamics.common.inventory.attachment.FluidServoAttachmentMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -69,13 +69,13 @@ public class FluidServoAttachmentScreen extends ContainerScreenCoFH<FluidServoAt
     }
 
     @Override
-    protected void renderLabels(GuiGraphics pGuiGraphics, int mouseX, int mouseY) {
+    protected void extractLabels(GuiGraphicsExtractor pGuiGraphics, int mouseX, int mouseY) {
 
         String output = format(attachment.getTransfer());
 
-        pGuiGraphics.drawString(font, output, getCenteredOffset(output, 151), 51, 0x404040, false);
+        drawString(pGuiGraphics, output, getCenteredOffset(output, 151), 51, 0x404040, false);
 
-        super.renderLabels(pGuiGraphics, mouseX, mouseY);
+        super.extractLabels(pGuiGraphics, mouseX, mouseY);
     }
 
     // region ELEMENTS

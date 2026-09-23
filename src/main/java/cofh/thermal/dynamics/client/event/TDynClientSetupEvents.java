@@ -1,16 +1,19 @@
 package cofh.thermal.dynamics.client.event;
 
 import cofh.thermal.dynamics.client.model.DuctModel;
+import cofh.thermal.dynamics.client.renderer.model.DuctBakedModel;
 import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
+import net.neoforged.neoforge.client.event.ModelEvent.RegisterLoaders;
+import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 
 import static cofh.lib.util.constants.ModIds.ID_THERMAL_DYNAMICS;
 
-@EventBusSubscriber (value = Dist.CLIENT, modid = ID_THERMAL_DYNAMICS, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber (value = Dist.CLIENT, modid = ID_THERMAL_DYNAMICS)
 public class TDynClientSetupEvents {
 
     private static final String BLOCK_ATLAS = "minecraft:textures/atlas/blocks.png";
@@ -20,9 +23,21 @@ public class TDynClientSetupEvents {
     }
 
     @SubscribeEvent
-    public static void registerModels(final RegisterGeometryLoaders event) {
+    public static void registerModels(final RegisterLoaders event) {
 
         event.register(Identifier.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "duct"), new DuctModel.Loader());
+    }
+
+    @SubscribeEvent
+    public static void registerBlockStateModels(final RegisterBlockStateModels event) {
+
+        event.registerModel(Identifier.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "duct"), DuctBakedModel.Unbaked.CODEC);
+    }
+
+    @SubscribeEvent
+    public static void registerItemModels(final RegisterItemModelsEvent event) {
+
+        event.register(Identifier.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "duct"), DuctBakedModel.ItemUnbaked.CODEC);
     }
 
     //    @SubscribeEvent

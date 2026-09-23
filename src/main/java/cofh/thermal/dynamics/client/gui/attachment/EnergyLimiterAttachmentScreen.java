@@ -9,7 +9,7 @@ import cofh.core.util.helpers.GuiHelper;
 import cofh.thermal.dynamics.common.attachment.EnergyLimiterAttachment;
 import cofh.thermal.dynamics.common.inventory.attachment.EnergyLimiterAttachmentMenu;
 import cofh.thermal.dynamics.common.network.packet.server.AttachmentConfigPacket;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -59,15 +59,15 @@ public class EnergyLimiterAttachmentScreen extends ContainerScreenCoFH<EnergyLim
     }
 
     @Override
-    protected void renderLabels(GuiGraphics pGuiGraphics, int mouseX, int mouseY) {
+    protected void extractLabels(GuiGraphicsExtractor pGuiGraphics, int mouseX, int mouseY) {
 
         String input = format(attachment.amountInput);
         String output = format(attachment.amountOutput);
 
-        pGuiGraphics.drawString(font, input, getCenteredOffset(input, 50), 42, 0x404040, false);
-        pGuiGraphics.drawString(font, output, getCenteredOffset(output, 126), 42, 0x404040, false);
+        drawString(pGuiGraphics, input, getCenteredOffset(input, 50), 42, 0x404040, false);
+        drawString(pGuiGraphics, output, getCenteredOffset(output, 126), 42, 0x404040, false);
 
-        super.renderLabels(pGuiGraphics, mouseX, mouseY);
+        super.extractLabels(pGuiGraphics, mouseX, mouseY);
     }
 
     // region ELEMENTS

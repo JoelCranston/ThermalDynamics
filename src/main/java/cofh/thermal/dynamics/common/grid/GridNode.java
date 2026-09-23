@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
@@ -18,7 +17,7 @@ import java.util.EnumSet;
  *
  * @author covers1624
  */
-public abstract class GridNode<G extends Grid<G, ?>> implements INBTSerializable<CompoundTag> {
+public abstract class GridNode<G extends Grid<G, ?>> {
 
     protected final EnumSet<Direction> connections = EnumSet.noneOf(Direction.class);
     protected G grid;
@@ -31,13 +30,11 @@ public abstract class GridNode<G extends Grid<G, ?>> implements INBTSerializable
         this.grid = grid;
     }
 
-    @Override
     public CompoundTag serializeNBT(HolderLookup.Provider registries) {
 
         return new CompoundTag();
     }
 
-    @Override
     public void deserializeNBT(HolderLookup.Provider registries, CompoundTag nbt) {
 
     }

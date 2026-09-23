@@ -10,7 +10,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -19,7 +18,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +44,7 @@ import static net.covers1624.quack.util.SneakyUtils.unsafeCast;
  * @author covers1624
  */
 @SuppressWarnings ("UnstableApiUsage")
-public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> implements INBTSerializable<CompoundTag> {
+public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> {
 
     protected static final Logger LOGGER = LogManager.getLogger();
     protected static final boolean DEBUG = Grid.class.desiredAssertionStatus();
@@ -152,7 +150,7 @@ public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> implemen
     // returns true if this grid changes its loaded state to true.
     public boolean onChunkLoad(ChunkAccess chunk) {
 
-        long pos = chunk.getPos().toLong();
+        long pos = chunk.getPos().pack();
         List<N> nodes = nodesPerChunk.get(pos);
         if (nodes == null || nodes.isEmpty()) {
             return false;
@@ -171,7 +169,7 @@ public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> implemen
     // returns true if this grid changes its loaded state to false.
     public boolean onChunkUnload(ChunkAccess chunk) {
 
-        long pos = chunk.getPos().toLong();
+        long pos = chunk.getPos().pack();
         List<N> nodes = nodesPerChunk.get(pos);
         if (nodes == null || nodes.isEmpty()) {
             return false;
@@ -187,14 +185,13 @@ public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> implemen
         return wasLoaded;
     }
 
-    @Override
     public CompoundTag serializeNBT(HolderLookup.Provider registries) {
 
         CompoundTag tag = new CompoundTag();
         ListTag nodes = new ListTag();
         for (N node : nodeGraph.nodes()) {
             CompoundTag nodeTag = new CompoundTag();
-            nodeTag.put("pos", NbtUtils.writeBlockPos(node.getPos()));
+            nodeTag.store("pos", BlockPos.CODEC, node.getPos());
             nodeTag.merge(node.serializeNBT(registries));
             nodes.add(nodeTag);
         }
@@ -203,8 +200,8 @@ public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> implemen
         ListTag edges = new ListTag();
         for (EndpointPair<N> edge : nodeGraph.edges()) {
             CompoundTag edgeTag = new CompoundTag();
-            edgeTag.put("U", NbtUtils.writeBlockPos(edge.nodeU().getPos()));
-            edgeTag.put("V", NbtUtils.writeBlockPos(edge.nodeV().getPos()));
+            edgeTag.store("U", BlockPos.CODEC, edge.nodeU().getPos());
+            edgeTag.store("V", BlockPos.CODEC, edge.nodeV().getPos());
             edges.add(edgeTag);
         }
         tag.put("edges", edges);
@@ -212,7 +209,7 @@ public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> implemen
         ListTag updateable = new ListTag();
         for (BlockPos pos : updatableHosts) {
             CompoundTag updateTag = new CompoundTag();
-            updateTag.put("pos", NbtUtils.writeBlockPos(pos));
+            updateTag.store("pos", BlockPos.CODEC, pos);
             updateable.add(updateTag);
         }
         tag.put("updateable", updateable);
@@ -220,29 +217,28 @@ public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> implemen
         return tag;
     }
 
-    @Override
     public void deserializeNBT(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        ListTag nodes = nbt.getList("nodes", 10);
+        ListTag nodes = nbt.getListOrEmpty("nodes");
 
         for (int i = 0; i < nodes.size(); ++i) {
-            CompoundTag nodeTag = nodes.getCompound(i);
-            BlockPos pos = NbtUtils.readBlockPos(nodeTag, "pos").orElseThrow();
+            CompoundTag nodeTag = nodes.getCompoundOrEmpty(i);
+            BlockPos pos = nodeTag.read("pos", BlockPos.CODEC).orElseThrow();
             GridNode<?> node = newNode(pos, false);
             node.deserializeNBT(registries, nodeTag);
         }
 
-        ListTag edges = nbt.getList("edges", 10);
+        ListTag edges = nbt.getListOrEmpty("edges");
         for (int i = 0; i < edges.size(); ++i) {
-            CompoundTag edgeTag = edges.getCompound(i);
-            BlockPos uPos = NbtUtils.readBlockPos(edgeTag, "U").orElseThrow();
-            BlockPos vPos = NbtUtils.readBlockPos(edgeTag, "V").orElseThrow();
+            CompoundTag edgeTag = edges.getCompoundOrEmpty(i);
+            BlockPos uPos = edgeTag.read("U", BlockPos.CODEC).orElseThrow();
+            BlockPos vPos = edgeTag.read("V", BlockPos.CODEC).orElseThrow();
             nodeGraph.putEdge(this.nodes.get(uPos), this.nodes.get(vPos));
         }
-        ListTag updateable = nbt.getList("updateable", 10);
+        ListTag updateable = nbt.getListOrEmpty("updateable");
         for (int i = 0; i < updateable.size(); ++i) {
-            CompoundTag updateTag = updateable.getCompound(i);
-            BlockPos pos = NbtUtils.readBlockPos(updateTag, "pos").orElseThrow();
+            CompoundTag updateTag = updateable.getCompoundOrEmpty(i);
+            BlockPos pos = updateTag.read("pos", BlockPos.CODEC).orElseThrow();
             updatableHosts.add(pos);
         }
         // Make sure no Node positions are identity match to BlockPos.ZERO
@@ -670,7 +666,7 @@ public abstract class Grid<G extends Grid<G, N>, N extends GridNode<G>> implemen
 
     private static long asChunkLong(BlockPos pos) {
 
-        return ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4);
+        return ChunkPos.pack(pos.getX() >> 4, pos.getZ() >> 4);
     }
 
     private static class PositionCollector {

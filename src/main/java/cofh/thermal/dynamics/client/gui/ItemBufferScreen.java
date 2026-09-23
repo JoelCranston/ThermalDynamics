@@ -29,10 +29,9 @@ public class ItemBufferScreen extends ContainerScreenCoFH<ItemBufferMenu> {
 
     public ItemBufferScreen(ItemBufferMenu container, Inventory inv, Component titleIn) {
 
-        super(container, inv, titleIn);
+        super(container, inv, titleIn, 176, 178);
         texture = TEXTURE;
         info = generatePanelInfo("info.thermal.item_buffer");
-        imageHeight = 178;
     }
 
     @Override

@@ -2,18 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "tag": "c:glass_blocks"
-    },
-    "I": {
-      "tag": "c:ingots/invar"
-    },
-    "N": {
-      "tag": "c:nuggets/lead"
-    },
-    "R": {
-      "item": "thermal:redstone_servo"
-    }
+    "G": "#c:glass_blocks",
+    "I": "#c:ingots/invar",
+    "N": "#c:nuggets/lead",
+    "R": "thermal:redstone_servo"
   },
   "pattern": [
     "NGN",

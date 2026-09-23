@@ -211,7 +211,7 @@ public class FluidGrid extends Grid<FluidGrid, FluidGridNode> implements IFluidH
     @SuppressWarnings ("unchecked")
     public <T, C> T getCapability(BlockCapability<T, C> capability) {
 
-        if (capability == Capabilities.FluidHandler.BLOCK) {
+        if (capability == Capabilities.Fluid.BLOCK) {
             return (T) storage;
         }
         return null;

@@ -6,6 +6,7 @@ import cofh.thermal.lib.util.references.ThermalTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
@@ -22,15 +23,15 @@ import static net.minecraft.data.recipes.RecipeCategory.MISC;
 
 public class TDynRecipeProvider extends RecipeProviderCoFH {
 
-    public TDynRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+    public TDynRecipeProvider(HolderLookup.Provider registries, RecipeOutput output) {
 
-        super(output, registries, ID_THERMAL);
+        super(registries, output, ID_THERMAL);
     }
 
     @Override
-    protected void buildRecipes(RecipeOutput consumer) {
+    protected void buildRecipes() {
 
-        generateTileRecipes(consumer);
+        generateTileRecipes(output);
     }
 
     private void generateTileRecipes(RecipeOutput consumer) {
@@ -39,7 +40,7 @@ public class TDynRecipeProvider extends RecipeProviderCoFH {
 
         Item redstoneServo = reg.get("redstone_servo");
 
-        ShapedRecipeBuilder.shaped(BUILDING_BLOCKS, reg.get(ID_ITEM_BUFFER))
+        ShapedRecipeBuilder.shaped(items, BUILDING_BLOCKS, reg.get(ID_ITEM_BUFFER))
                 .define('C', ItemTagsCoFH.INGOTS_SIGNALUM)
                 .define('I', ItemTagsCoFH.INGOTS_TIN)
                 .define('Q', Tags.Items.GEMS_QUARTZ)
@@ -50,7 +51,7 @@ public class TDynRecipeProvider extends RecipeProviderCoFH {
                 .unlockedBy("has_quartz", has(Tags.Items.GEMS_QUARTZ))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(BUILDING_BLOCKS, reg.get(ID_ENERGY_DUCT), 4)
+        ShapedRecipeBuilder.shaped(items, BUILDING_BLOCKS, reg.get(ID_ENERGY_DUCT), 4)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .define('L', ItemTagsCoFH.INGOTS_LEAD)
                 .define('R', Tags.Items.DUSTS_REDSTONE)
@@ -60,21 +61,21 @@ public class TDynRecipeProvider extends RecipeProviderCoFH {
                 .unlockedBy("has_lead", has(ItemTagsCoFH.INGOTS_LEAD))
                 .save(consumer, ID_THERMAL + ":energy_duct_4");
 
-        ShapedRecipeBuilder.shaped(BUILDING_BLOCKS, reg.get(ID_FLUID_DUCT), 4)
+        ShapedRecipeBuilder.shaped(items, BUILDING_BLOCKS, reg.get(ID_FLUID_DUCT), 4)
                 .define('L', ItemTagsCoFH.INGOTS_LEAD)
                 .define('C', ItemTagsCoFH.INGOTS_BRONZE)
                 .pattern("CLC")
                 .unlockedBy("has_bronze", has(ItemTagsCoFH.INGOTS_BRONZE))
                 .save(consumer, ID_THERMAL + ":fluid_duct_4");
 
-        ShapedRecipeBuilder.shaped(BUILDING_BLOCKS, reg.get(ID_FLUID_DUCT_WINDOWED), 4)
+        ShapedRecipeBuilder.shaped(items, BUILDING_BLOCKS, reg.get(ID_FLUID_DUCT_WINDOWED), 4)
                 .define('G', ThermalTags.Items.HARDENED_GLASS)
                 .define('C', ItemTagsCoFH.INGOTS_BRONZE)
                 .pattern("CGC")
                 .unlockedBy("has_bronze", has(ItemTagsCoFH.INGOTS_BRONZE))
                 .save(consumer, ID_THERMAL + ":fluid_duct_windowed_4");
 
-        ShapedRecipeBuilder.shaped(BUILDING_BLOCKS, reg.get(ID_ENERGY_LIMITER_ATTACHMENT), 2)
+        ShapedRecipeBuilder.shaped(items, BUILDING_BLOCKS, reg.get(ID_ENERGY_LIMITER_ATTACHMENT), 2)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .define('I', ItemTagsCoFH.INGOTS_ELECTRUM)
                 .define('N', ItemTagsCoFH.NUGGETS_LEAD)
@@ -84,7 +85,7 @@ public class TDynRecipeProvider extends RecipeProviderCoFH {
                 .unlockedBy("has_duct", has(ThermalTags.Items.DUCTS))
                 .save(consumer, ID_THERMAL + ":energy_limiter_attachment_2");
 
-        ShapedRecipeBuilder.shaped(MISC, reg.get(ID_FILTER_ATTACHMENT), 2)
+        ShapedRecipeBuilder.shaped(items, MISC, reg.get(ID_FILTER_ATTACHMENT), 2)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .define('I', Tags.Items.INGOTS_IRON)
                 .define('N', ItemTagsCoFH.NUGGETS_TIN)
@@ -94,7 +95,7 @@ public class TDynRecipeProvider extends RecipeProviderCoFH {
                 .unlockedBy("has_duct", has(ThermalTags.Items.DUCTS))
                 .save(consumer, ID_THERMAL + ":filter_attachment_2");
 
-        ShapedRecipeBuilder.shaped(MISC, reg.get(ID_SERVO_ATTACHMENT), 2)
+        ShapedRecipeBuilder.shaped(items, MISC, reg.get(ID_SERVO_ATTACHMENT), 2)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .define('I', Tags.Items.INGOTS_IRON)
                 .define('N', ItemTagsCoFH.NUGGETS_TIN)
@@ -104,7 +105,7 @@ public class TDynRecipeProvider extends RecipeProviderCoFH {
                 .unlockedBy("has_duct", has(ThermalTags.Items.DUCTS))
                 .save(consumer, ID_THERMAL + ":servo_attachment_2");
 
-        ShapedRecipeBuilder.shaped(MISC, reg.get(ID_TURBO_SERVO_ATTACHMENT), 2)
+        ShapedRecipeBuilder.shaped(items, MISC, reg.get(ID_TURBO_SERVO_ATTACHMENT), 2)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .define('I', ItemTagsCoFH.INGOTS_INVAR)
                 .define('N', ItemTagsCoFH.NUGGETS_LEAD)
@@ -113,6 +114,27 @@ public class TDynRecipeProvider extends RecipeProviderCoFH {
                 .pattern("IRI")
                 .unlockedBy("has_duct", has(ThermalTags.Items.DUCTS))
                 .save(consumer, ID_THERMAL + ":turbo_servo_attachment_2");
+    }
+
+    public static class Runner extends RecipeProvider.Runner {
+
+        public Runner(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+
+            super(output, registries);
+        }
+
+        @Override
+        protected RecipeProvider createRecipeProvider(HolderLookup.Provider registries, RecipeOutput output) {
+
+            return new TDynRecipeProvider(registries, output);
+        }
+
+        @Override
+        public String getName() {
+
+            return "Thermal Dynamics: Recipes";
+        }
+
     }
 
 }

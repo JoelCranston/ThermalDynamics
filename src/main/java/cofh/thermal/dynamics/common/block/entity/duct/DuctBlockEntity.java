@@ -17,9 +17,11 @@ import cofh.thermal.dynamics.client.model.data.DuctModelData;
 import cofh.thermal.dynamics.common.attachment.*;
 import cofh.thermal.dynamics.common.grid.Grid;
 import cofh.thermal.dynamics.common.grid.GridNode;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,6 +36,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.model.data.ModelData;
 
@@ -243,6 +247,16 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
         }
     }
 
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+
+        dropAttachments();
+        IGridContainer gridContainer = IGridContainer.getGrid(level);
+        if (gridContainer != null) {
+            gridContainer.onDuctRemoved(this);
+        }
+    }
+
     public void calcDuctModelDataServer() {
 
         if (level == null || Utils.isClientWorld(level) || getGrid() == null) {
@@ -356,8 +370,8 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
         if (tag != null) {
             for (int i = 0; i < 6; ++i) {
                 if (tag.contains(TAG_ATTACHMENT + i)) {
-                    CompoundTag attachmentTag = tag.getCompound(TAG_ATTACHMENT + i);
-                    attachments[i] = AttachmentRegistry.getAttachment(attachmentTag.getString(TAG_TYPE), level.registryAccess(), attachmentTag, this, DIRECTIONS[i]);
+                    CompoundTag attachmentTag = tag.getCompoundOrEmpty(TAG_ATTACHMENT + i);
+                    attachments[i] = AttachmentRegistry.getAttachment(attachmentTag.getStringOr(TAG_TYPE, ""), level.registryAccess(), attachmentTag, this, DIRECTIONS[i]);
                 } else {
                     attachments[i] = EmptyAttachment.INSTANCE;
                 }
@@ -375,14 +389,28 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
         return saveWithoutMetadata(registries);
     }
 
+    @SuppressWarnings ("deprecation")
     @Override
+    protected final void loadAdditional(ValueInput input) {
+
+        super.loadAdditional(input);
+        loadAdditional(input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new), input.lookup());
+    }
+
+    @Override
+    protected final void saveAdditional(ValueOutput output) {
+
+        super.saveAdditional(output);
+        CompoundTag nbt = new CompoundTag();
+        saveAdditional(nbt, level != null ? level.registryAccess() : RegistryAccess.EMPTY);
+        output.store(nbt);
+    }
+
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 
-        super.loadAdditional(tag, registries);
+        redstonePower = tag.getIntOr(TAG_RS_POWER, 0);
 
-        redstonePower = tag.getInt(TAG_RS_POWER);
-
-        byte[] bConn = tag.getByteArray(TAG_SIDES);
+        byte[] bConn = tag.getByteArray(TAG_SIDES).orElse(new byte[0]);
         if (bConn.length == 6) {
             for (int i = 0; i < 6; ++i) {
                 connections[i] = ConnectionType.VALUES[bConn[i]];
@@ -390,18 +418,15 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
         }
         for (int i = 0; i < 6; ++i) {
             if (tag.contains(TAG_ATTACHMENT + i)) {
-                CompoundTag attachmentTag = tag.getCompound(TAG_ATTACHMENT + i);
-                attachments[i] = AttachmentRegistry.getAttachment(attachmentTag.getString(TAG_TYPE), registries, attachmentTag, this, DIRECTIONS[i]);
+                CompoundTag attachmentTag = tag.getCompoundOrEmpty(TAG_ATTACHMENT + i);
+                attachments[i] = AttachmentRegistry.getAttachment(attachmentTag.getStringOr(TAG_TYPE, ""), registries, attachmentTag, this, DIRECTIONS[i]);
             } else {
                 attachments[i] = EmptyAttachment.INSTANCE;
             }
         }
     }
 
-    @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-
-        super.saveAdditional(tag, registries);
 
         tag.putInt(TAG_RS_POWER, redstonePower);
 

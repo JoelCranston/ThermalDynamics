@@ -14,8 +14,6 @@ import cofh.thermal.dynamics.common.block.entity.duct.DuctBlockEntity;
 import cofh.thermal.dynamics.common.event.GridEvents;
 import cofh.thermal.dynamics.common.network.PacketHandler;
 import cofh.thermal.dynamics.init.registries.*;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
@@ -34,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 
 import static cofh.lib.util.FlagManager.setFlag;
 import static cofh.lib.util.constants.ModIds.ID_THERMAL_DYNAMICS;
-import static cofh.thermal.core.ThermalCore.BLOCKS;
 import static cofh.thermal.dynamics.init.registries.TDynBlockEntities.*;
 import static cofh.thermal.dynamics.init.registries.TDynContainers.*;
 import static cofh.thermal.dynamics.init.registries.TDynIDs.*;
@@ -91,7 +88,6 @@ public class ThermalDynamics {
 
     private void clientSetup(final FMLClientSetupEvent event) {
 
-        event.enqueueWork(this::registerRenderLayers);
         DebugRenderer.register();
     }
 
@@ -111,34 +107,16 @@ public class ThermalDynamics {
         event.registerBlockEntity(TDynApi.GRID_HOST_CAPABILITY, FLUID_DUCT_BLOCK_ENTITY.get(), (tile, ctx) -> tile);
         event.registerBlockEntity(TDynApi.GRID_HOST_CAPABILITY, FLUID_DUCT_WINDOWED_BLOCK_ENTITY.get(), (tile, ctx) -> tile);
 
-        registerPassthroughCapability(event, Capabilities.EnergyStorage.BLOCK, unsafeCast(ENERGY_DUCT_BLOCK_ENTITY.get()));
-        registerPassthroughCapability(event, Capabilities.FluidHandler.BLOCK, unsafeCast(FLUID_DUCT_BLOCK_ENTITY.get()));
-        registerPassthroughCapability(event, Capabilities.FluidHandler.BLOCK, unsafeCast(FLUID_DUCT_WINDOWED_BLOCK_ENTITY.get()));
+        registerPassthroughCapability(event, Capabilities.Energy.BLOCK, unsafeCast(ENERGY_DUCT_BLOCK_ENTITY.get()));
+        registerPassthroughCapability(event, Capabilities.Fluid.BLOCK, unsafeCast(FLUID_DUCT_BLOCK_ENTITY.get()));
+        registerPassthroughCapability(event, Capabilities.Fluid.BLOCK, unsafeCast(FLUID_DUCT_WINDOWED_BLOCK_ENTITY.get()));
 
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ITEM_BUFFER_BLOCK_ENTITY.get(), ItemBufferBlockEntity::getItemHandler);
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ITEM_BUFFER_BLOCK_ENTITY.get(), ItemBufferBlockEntity::getItemHandler);
     }
 
     private <T> void registerPassthroughCapability(RegisterCapabilitiesEvent event, BlockCapability<T, Direction> cap, BlockEntityType<DuctBlockEntity<?, ?>> type) {
 
         event.registerBlockEntity(cap, type, (tile, ctx) -> tile.getCapability(cap, ctx));
-    }
-    // endregion
-
-    // region HELPERS
-    private void registerRenderLayers() {
-
-        RenderType cutout = RenderType.cutout();
-
-        // RenderTypeLookup.setRenderLayer(ENERGY_DISTRIBUTOR_BLOCK, cutout);
-
-        // RenderTypeLookup.setRenderLayer(BLOCKS.get(ID_ENDER_TUNNEL), translucent);
-
-        // RenderTypeLookup.setRenderLayer(BLOCKS.get(ID_DEVICE_FLUID_BUFFER), cutout);
-        // RenderTypeLookup.setRenderLayer(BLOCKS.get(ID_DEVICE_ITEM_BUFFER), cutout);
-
-        ItemBlockRenderTypes.setRenderLayer(BLOCKS.get(ID_ENERGY_DUCT), cutout);
-        ItemBlockRenderTypes.setRenderLayer(BLOCKS.get(ID_FLUID_DUCT), cutout);
-        ItemBlockRenderTypes.setRenderLayer(BLOCKS.get(ID_FLUID_DUCT_WINDOWED), cutout);
     }
     // endregion
 }

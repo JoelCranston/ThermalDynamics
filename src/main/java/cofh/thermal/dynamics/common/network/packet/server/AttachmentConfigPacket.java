@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class AttachmentConfigPacket {
@@ -45,7 +45,7 @@ public class AttachmentConfigPacket {
         if (attachment == null) {
             return;
         }
-        PacketDistributor.sendToServer(new AttachmentConfigPayload(attachment.pos(), attachment.side(), attachment.getConfigPacket(new FriendlyByteBuf(Unpooled.buffer()))));
+        ClientPacketDistributor.sendToServer(new AttachmentConfigPayload(attachment.pos(), attachment.side(), attachment.getConfigPacket(new FriendlyByteBuf(Unpooled.buffer()))));
     }
 
 }

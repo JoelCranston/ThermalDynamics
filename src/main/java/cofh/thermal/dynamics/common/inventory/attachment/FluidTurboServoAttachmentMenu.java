@@ -121,7 +121,7 @@ public class FluidTurboServoAttachmentMenu extends AttachmentMenu implements IFi
         for (int i = 0; i < size; ++i) {
             Identifier fluidId = buffer.readIdentifier();
             int amount = buffer.readVarInt();
-            fluidStacks.add(new FluidStack(BuiltInRegistries.FLUID.get(fluidId), amount));
+            fluidStacks.add(new FluidStack(BuiltInRegistries.FLUID.getValue(fluidId), amount));
         }
         filterInventory.readFromSource(fluidStacks);
 

@@ -58,7 +58,7 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 
         if (!renderFluid.isEmpty()) {
-            tag.put(TAG_RENDER_FLUID, renderFluid.save(registries));
+            tag.put(TAG_RENDER_FLUID, FluidHelper.saveOptional(registries, renderFluid));
         }
         super.saveAdditional(tag, registries);
     }
@@ -68,7 +68,7 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
 
         super.loadAdditional(tag, registries);
 
-        renderFluid = FluidStack.parseOptional(registries, tag.getCompound(TAG_RENDER_FLUID));
+        renderFluid = FluidHelper.parseOptional(registries, tag.getCompoundOrEmpty(TAG_RENDER_FLUID));
     }
     // endregion
 
@@ -104,7 +104,7 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
     public void handleStatePacket(FriendlyByteBuf buffer) {
 
         int prevLight = getLightValue();
-        renderFluid = new FluidStack(BuiltInRegistries.FLUID.get(buffer.readIdentifier()), buffer.readVarInt());
+        renderFluid = new FluidStack(BuiltInRegistries.FLUID.getValue(buffer.readIdentifier()), buffer.readVarInt());
 
         if (prevLight != getLightValue()) {
             level.getChunkSource().getLightEngine().checkBlock(worldPosition);

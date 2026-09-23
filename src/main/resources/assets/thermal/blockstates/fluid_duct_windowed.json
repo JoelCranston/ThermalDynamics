@@ -1,9 +1,8 @@
 {
   "variants": {
-    "": [
-      {
-        "model": "thermal:block/fluid_duct_windowed"
-      }
-    ]
+    "": {
+      "type": "thermal_dynamics:duct",
+      "model": "thermal:block/fluid_duct_windowed"
+    }
   }
 }

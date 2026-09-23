@@ -2,18 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "tag": "c:glass_blocks"
-    },
-    "I": {
-      "tag": "c:ingots/iron"
-    },
-    "N": {
-      "tag": "c:nuggets/tin"
-    },
-    "R": {
-      "tag": "c:dusts/redstone"
-    }
+    "G": "#c:glass_blocks",
+    "I": "#c:ingots/iron",
+    "N": "#c:nuggets/tin",
+    "R": "#c:dusts/redstone"
   },
   "pattern": [
     "NGN",

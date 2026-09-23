@@ -7,7 +7,7 @@ import cofh.thermal.dynamics.common.network.data.server.AttachmentRedstoneContro
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class AttachmentRedstoneControlPacket {
@@ -44,7 +44,7 @@ public class AttachmentRedstoneControlPacket {
         if (attachment == null) {
             return;
         }
-        PacketDistributor.sendToServer(new AttachmentRedstoneControlPayload(attachment.pos(), attachment.side(), attachment.redstoneControl().getThreshold(), (byte) attachment.redstoneControl().getMode().ordinal()));
+        ClientPacketDistributor.sendToServer(new AttachmentRedstoneControlPayload(attachment.pos(), attachment.side(), attachment.redstoneControl().getThreshold(), (byte) attachment.redstoneControl().getMode().ordinal()));
     }
 
 }

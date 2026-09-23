@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "thermal_dynamics:duct",
+    "model": "thermal:item/energy_duct"
+  }
+}

@@ -10,6 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 import static cofh.lib.util.Constants.DIRECTIONS;
 import static cofh.thermal.dynamics.api.grid.IDuct.ConnectionType.DISABLED;
@@ -80,9 +82,10 @@ public class FluidGridNode extends GridNode<FluidGrid> implements ITickableGridN
         if (tile == null) {
             return;
         }
-        IFluidHandler handler = attachment.wrapExternalCapability(Capabilities.FluidHandler.BLOCK,
-                world.getCapability(Capabilities.FluidHandler.BLOCK, tile.getBlockPos(), tile.getBlockState(), tile, dir.getOpposite()));
-        if (handler != null) {
+        ResourceHandler<FluidResource> resourceHandler = attachment.wrapExternalCapability(Capabilities.Fluid.BLOCK,
+                world.getCapability(Capabilities.Fluid.BLOCK, tile.getBlockPos(), tile.getBlockState(), tile, dir.getOpposite()));
+        if (resourceHandler != null) {
+            IFluidHandler handler = IFluidHandler.of(resourceHandler);
             grid.drain(handler.fill(grid.getFluid(), EXECUTE), EXECUTE);
         }
     }

@@ -1,12 +1,13 @@
 package cofh.thermal.dynamics.client;
 
 import cofh.lib.util.helpers.BlockHelper;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.util.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -20,8 +21,7 @@ import org.joml.Vector3f;
 import java.util.*;
 
 import static cofh.core.client.CoreRenderType.THICK_LINES;
-import static net.minecraft.client.renderer.RenderStateShard.COLOR_DEPTH_WRITE;
-import static net.minecraft.client.renderer.RenderStateShard.NO_DEPTH_TEST;
+import static cofh.core.init.CoreShaders.LINES_NO_DEPTH;
 
 /**
  * Created by covers1624 on 12/12/21.
@@ -29,25 +29,16 @@ import static net.minecraft.client.renderer.RenderStateShard.NO_DEPTH_TEST;
 public class DebugRenderer {
 
     private static final AABB smolBox = new AABB(0.25, 0.25, 0.25, 0.75, 0.75, 0.75);
-    private static final RenderType laserBox = RenderType.create("td:laser", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 256, false, true, RenderType.CompositeState.builder()
-            .setShaderState(RenderType.POSITION_COLOR_SHADER)
-            .setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY)
-            .setTextureState(RenderType.NO_TEXTURE)
-            .setCullState(RenderType.NO_CULL)
-            .setLightmapState(RenderType.NO_LIGHTMAP)
-            .createCompositeState(false)
+    private static final RenderType laserBox = RenderType.create("td:laser", RenderSetup.builder(RenderPipelines.DEBUG_QUADS)
+            .sortOnUpload()
+            .bufferSize(256)
+            .createRenderSetup()
     );
-    private static final RenderType laserLine = RenderType.create("td:laser", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.LINES, 256, false, true, RenderType.CompositeState.builder()
-            .setShaderState(RenderType.RENDERTYPE_LINES_SHADER)
-            .setLineState(THICK_LINES)
-            .setLayeringState(RenderType.VIEW_OFFSET_Z_LAYERING)
-            .setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY)
-            .setTextureState(RenderType.NO_TEXTURE)
-            .setDepthTestState(NO_DEPTH_TEST)
-            .setCullState(RenderType.NO_CULL)
-            .setLightmapState(RenderType.NO_LIGHTMAP)
-            .setWriteMaskState(COLOR_DEPTH_WRITE)
-            .createCompositeState(false)
+    private static final RenderType laserLine = RenderType.create("td:laser", RenderSetup.builder(LINES_NO_DEPTH)
+            .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+            .sortOnUpload()
+            .bufferSize(256)
+            .createRenderSetup()
     );
     private static final MultiBufferSource.BufferSource BUFFERS = MultiBufferSource.immediateWithBuffers(Util.make(new LinkedHashMap<RenderType, ByteBufferBuilder>(), map -> {
         map.put(laserBox, new ByteBufferBuilder(laserBox.bufferSize()));
@@ -61,15 +52,12 @@ public class DebugRenderer {
         NeoForge.EVENT_BUS.addListener(DebugRenderer::renderWorldLast);
     }
 
-    private static void renderWorldLast(RenderLevelStageEvent event) {
+    private static void renderWorldLast(RenderLevelStageEvent.AfterTranslucentParticles event) {
 
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
-            return;
-        }
         PoseStack pStack = event.getPoseStack();
         pStack.pushPose();
 
-        Vec3 projectedView = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        Vec3 projectedView = event.getLevelRenderState().cameraRenderState.pos;
         pStack.translate(-projectedView.x, -projectedView.y, -projectedView.z);
 
         Random random = new Random();
@@ -89,8 +77,6 @@ public class DebugRenderer {
                 bufferCuboidSolid(builder, pStack.last().pose(), smolBox, r, g, b, 0.25F);
                 pStack.popPose();
 
-                RenderSystem.disableDepthTest();
-
                 VertexConsumer vb = BUFFERS.getBuffer(laserLine);
 
                 for (BlockPos edge : entry.getValue()) {
@@ -98,7 +84,7 @@ public class DebugRenderer {
                     Direction side = BlockHelper.getSide(offset);
                     Vector3f sub = new Vector3f();
                     if (side != null) {
-                        Vec3i norm = side.getNormal();
+                        Vec3i norm = side.getUnitVec3i();
                         sub = new Vector3f(norm.getX(), norm.getY(), norm.getZ());
                         sub.mul((1F / 16F) * 4);
                     }
@@ -107,9 +93,10 @@ public class DebugRenderer {
                     start.add(sub);
                     Vector3f end = new Vector3f(edge.getX() + 0.5F, edge.getY() + 0.5F, edge.getZ() + 0.5F);
                     end.sub(sub);
+                    Vector3f normal = new Vector3f(end).sub(start).normalize();
 
-                    vb.addVertex(pStack.last().pose(), start.x(), start.y(), start.z()).setColor(1F, 0F, 0F, 0.25F);
-                    vb.addVertex(pStack.last().pose(), end.x(), end.y(), end.z()).setColor(1F, 0F, 0F, 0.25F);
+                    vb.addVertex(pStack.last().pose(), start.x(), start.y(), start.z()).setColor(1F, 0F, 0F, 0.25F).setNormal(normal.x(), normal.y(), normal.z()).setLineWidth(THICK_LINES);
+                    vb.addVertex(pStack.last().pose(), end.x(), end.y(), end.z()).setColor(1F, 0F, 0F, 0.25F).setNormal(normal.x(), normal.y(), normal.z()).setLineWidth(THICK_LINES);
                 }
             }
         }

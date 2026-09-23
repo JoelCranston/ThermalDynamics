@@ -3,11 +3,14 @@ package cofh.thermal.dynamics.common.grid.energy;
 import cofh.lib.common.energy.IRedstoneFluxStorage;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 import static cofh.lib.util.constants.NBTTags.*;
 
-public final class EnergyGridStorage implements IRedstoneFluxStorage, INBTSerializable<CompoundTag> {
+public final class EnergyGridStorage implements IRedstoneFluxStorage, EnergyHandler {
 
     private long baseCapacity;
     private long capacity;
@@ -22,6 +25,21 @@ public final class EnergyGridStorage implements IRedstoneFluxStorage, INBTSerial
     private final long[] samplesOut = new long[40];
     private long rollingOut = 0;
     private long averageOut = 0;
+
+    private final SnapshotJournal<Long> journal = new SnapshotJournal<>() {
+
+        @Override
+        protected Long createSnapshot() {
+
+            return energy;
+        }
+
+        @Override
+        protected void revertToSnapshot(Long snapshot) {
+
+            energy = snapshot;
+        }
+    };
 
     public EnergyGridStorage(long baseCapacity) {
 
@@ -112,11 +130,11 @@ public final class EnergyGridStorage implements IRedstoneFluxStorage, INBTSerial
     // region NBT
     public EnergyGridStorage read(CompoundTag nbt) {
 
-        this.energy = nbt.getLong(TAG_ENERGY);
-        this.baseCapacity = nbt.getLong(TAG_ENERGY_MAX);
+        this.energy = nbt.getLongOr(TAG_ENERGY, 0);
+        this.baseCapacity = nbt.getLongOr(TAG_ENERGY_MAX, 0);
 
         //        this.averageIn = nbt.getLong(TAG_TRACK_IN);
-        this.averageOut = nbt.getLong(TAG_TRACK_OUT);
+        this.averageOut = nbt.getLongOr(TAG_TRACK_OUT, 0);
 
         updateCapacity();
         return this;
@@ -133,13 +151,11 @@ public final class EnergyGridStorage implements IRedstoneFluxStorage, INBTSerial
         return nbt;
     }
 
-    @Override
     public CompoundTag serializeNBT(HolderLookup.Provider registries) {
 
         return write(new CompoundTag());
     }
 
-    @Override
     public void deserializeNBT(HolderLookup.Provider registries, CompoundTag nbt) {
 
         read(nbt);
@@ -192,6 +208,36 @@ public final class EnergyGridStorage implements IRedstoneFluxStorage, INBTSerial
     public boolean canReceive() {
 
         return true;
+    }
+    // endregion
+
+    // region EnergyHandler
+    @Override
+    public long getAmountAsLong() {
+
+        return energy;
+    }
+
+    @Override
+    public long getCapacityAsLong() {
+
+        return capacity;
+    }
+
+    @Override
+    public int insert(int amount, TransactionContext transaction) {
+
+        TransferPreconditions.checkNonNegative(amount);
+        journal.updateSnapshots(transaction);
+        return receiveEnergy(amount, false);
+    }
+
+    @Override
+    public int extract(int amount, TransactionContext transaction) {
+
+        TransferPreconditions.checkNonNegative(amount);
+        journal.updateSnapshots(transaction);
+        return extractEnergy(amount, false);
     }
     // endregion
 }

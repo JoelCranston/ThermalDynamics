@@ -1,17 +1,22 @@
 package cofh.thermal.dynamics.common.grid.fluid;
 
+import cofh.core.util.helpers.FluidHelper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 import javax.annotation.Nonnull;
 
 import static cofh.lib.util.constants.NBTTags.TAG_CAPACITY;
 import static cofh.lib.util.constants.NBTTags.TAG_TRACK_OUT;
 
-public final class FluidGridStorage implements IFluidHandler, INBTSerializable<CompoundTag> {
+public final class FluidGridStorage implements IFluidHandler, ResourceHandler<FluidResource> {
 
     private int baseCapacity;
     private int capacity;
@@ -27,6 +32,21 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
     private final int[] samplesOut = new int[40];
     private int rollingOut = 0;
     private int averageOut = 0;
+
+    private final SnapshotJournal<FluidStack> journal = new SnapshotJournal<>() {
+
+        @Override
+        protected FluidStack createSnapshot() {
+
+            return fluid.copy();
+        }
+
+        @Override
+        protected void revertToSnapshot(FluidStack snapshot) {
+
+            fluid = snapshot;
+        }
+    };
 
     public FluidGridStorage(int baseCapacity) {
 
@@ -117,11 +137,11 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
     // region NBT
     public FluidGridStorage read(HolderLookup.Provider registries, CompoundTag nbt) {
 
-        setFluid(FluidStack.parseOptional(registries, nbt));
-        this.baseCapacity = nbt.getInt(TAG_CAPACITY);
+        setFluid(FluidHelper.parseOptional(registries, nbt));
+        this.baseCapacity = nbt.getIntOr(TAG_CAPACITY, 0);
 
         //        this.averageIn = nbt.getInt(TAG_TRACK_IN);
-        this.averageOut = nbt.getInt(TAG_TRACK_OUT);
+        this.averageOut = nbt.getIntOr(TAG_TRACK_OUT, 0);
 
         updateCapacity();
         return this;
@@ -130,7 +150,7 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
     public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
 
         // save() throws on an empty stack.
-        if (fluid.saveOptional(registries) instanceof CompoundTag savedTag) {
+        if (FluidHelper.saveOptional(registries, fluid) instanceof CompoundTag savedTag) {
             nbt.merge(savedTag);
         }
         nbt.putInt(TAG_CAPACITY, baseCapacity);
@@ -141,13 +161,11 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
         return nbt;
     }
 
-    @Override
     public CompoundTag serializeNBT(HolderLookup.Provider registries) {
 
         return write(registries, new CompoundTag());
     }
 
-    @Override
     public void deserializeNBT(HolderLookup.Provider registries, CompoundTag nbt) {
 
         read(registries, nbt);
@@ -244,6 +262,60 @@ public final class FluidGridStorage implements IFluidHandler, INBTSerializable<C
     public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
 
         return true;
+    }
+    // endregion
+
+    // region ResourceHandler
+    @Override
+    public int size() {
+
+        return 1;
+    }
+
+    @Override
+    public FluidResource getResource(int index) {
+
+        return FluidResource.of(fluid);
+    }
+
+    @Override
+    public long getAmountAsLong(int index) {
+
+        return fluid.getAmount();
+    }
+
+    @Override
+    public long getCapacityAsLong(int index, FluidResource resource) {
+
+        return capacity;
+    }
+
+    @Override
+    public boolean isValid(int index, FluidResource resource) {
+
+        return !resource.isEmpty() && isFluidValid(index, resource.toStack(1));
+    }
+
+    @Override
+    public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
+
+        TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+        if (index != 0 || amount == 0) {
+            return 0;
+        }
+        journal.updateSnapshots(transaction);
+        return fill(resource.toStack(amount), FluidAction.EXECUTE);
+    }
+
+    @Override
+    public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+
+        TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+        if (index != 0 || amount == 0 || !resource.matches(fluid)) {
+            return 0;
+        }
+        journal.updateSnapshots(transaction);
+        return drain(amount, FluidAction.EXECUTE).getAmount();
     }
     // endregion
 }

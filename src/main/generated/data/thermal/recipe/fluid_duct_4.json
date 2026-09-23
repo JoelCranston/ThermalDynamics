@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "C": {
-      "tag": "c:ingots/bronze"
-    },
-    "L": {
-      "tag": "c:ingots/lead"
-    }
+    "C": "#c:ingots/bronze",
+    "L": "#c:ingots/lead"
   },
   "pattern": [
     "CLC"

@@ -9,10 +9,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 
-public interface IAttachment extends INBTSerializable<CompoundTag> {
+public interface IAttachment {
 
     IDuct<?, ?> duct();
 
@@ -37,13 +36,11 @@ public interface IAttachment extends INBTSerializable<CompoundTag> {
     // Attachments MUST write their type to the NBT. Reading is optional.
     CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt);
 
-    @Override
     default CompoundTag serializeNBT(HolderLookup.Provider registries) {
 
         return write(registries, new CompoundTag());
     }
 
-    @Override
     default void deserializeNBT(HolderLookup.Provider registries, CompoundTag nbt) {
 
         read(registries, nbt);

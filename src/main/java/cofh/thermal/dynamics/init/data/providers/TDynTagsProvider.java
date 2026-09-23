@@ -3,13 +3,11 @@ package cofh.thermal.dynamics.init.data.providers;
 import cofh.thermal.lib.util.references.ThermalTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.tags.BlockTags;
+import net.neoforged.neoforge.common.data.BlockTagCopyingItemTagProvider;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 import static cofh.lib.util.constants.ModIds.ID_THERMAL;
@@ -20,9 +18,9 @@ public class TDynTagsProvider {
 
     public static class Block extends BlockTagsProvider {
 
-        public Block(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
+        public Block(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
 
-            super(output, lookupProvider, ID_THERMAL, existingFileHelper);
+            super(output, lookupProvider, ID_THERMAL);
         }
 
         @SuppressWarnings ("unchecked")
@@ -44,11 +42,11 @@ public class TDynTagsProvider {
 
     }
 
-    public static class Item extends ItemTagsProvider {
+    public static class Item extends BlockTagCopyingItemTagProvider {
 
-        public Item(PackOutput pOutput, CompletableFuture<HolderLookup.Provider> pLookupProvider, CompletableFuture<TagsProvider.TagLookup<net.minecraft.world.level.block.Block>> pBlockTags, ExistingFileHelper existingFileHelper) {
+        public Item(PackOutput pOutput, CompletableFuture<HolderLookup.Provider> pLookupProvider, CompletableFuture<TagsProvider.TagLookup<net.minecraft.world.level.block.Block>> pBlockTags) {
 
-            super(pOutput, pLookupProvider, pBlockTags, ID_THERMAL, existingFileHelper);
+            super(pOutput, pLookupProvider, pBlockTags, ID_THERMAL);
         }
 
         @SuppressWarnings ("unchecked")

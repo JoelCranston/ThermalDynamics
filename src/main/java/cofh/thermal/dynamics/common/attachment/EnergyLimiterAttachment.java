@@ -18,6 +18,8 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.IntSupplier;
@@ -86,8 +88,8 @@ public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllab
         }
         rsControl.read(nbt);
 
-        amountInput = nbt.getInt(TAG_AMOUNT_IN);
-        amountOutput = nbt.getInt(TAG_AMOUNT_OUT);
+        amountInput = nbt.getIntOr(TAG_AMOUNT_IN, 0);
+        amountOutput = nbt.getIntOr(TAG_AMOUNT_OUT, 0);
 
         return this;
     }
@@ -135,12 +137,12 @@ public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllab
     @SuppressWarnings ("unchecked")
     public <T, C> T wrapGridCapability(BlockCapability<T, C> capability, T gridCapIn) {
 
-        if (capability == Capabilities.EnergyStorage.BLOCK) {
+        if (capability == Capabilities.Energy.BLOCK) {
             if (gridCap != null) {
                 return (T) gridCap;
             }
-            if (gridCapIn instanceof IEnergyStorage storage) {
-                gridCap = new WrappedEnergyStorage(storage, () -> rsControl.getState() ? amountInput : 0, () -> rsControl.getState() ? amountOutput : 0);
+            if (gridCapIn instanceof EnergyHandler handler) {
+                gridCap = new WrappedEnergyStorage(handler, () -> rsControl.getState() ? amountInput : 0, () -> rsControl.getState() ? amountOutput : 0);
                 return (T) gridCap;
             }
         }
@@ -152,12 +154,12 @@ public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllab
     @SuppressWarnings ("unchecked")
     public <T, C> T wrapExternalCapability(BlockCapability<T, C> capability, T extCapIn) {
 
-        if (capability == Capabilities.EnergyStorage.BLOCK) {
+        if (capability == Capabilities.Energy.BLOCK) {
             if (extCap != null) {
                 return (T) extCap;
             }
-            if (extCapIn instanceof IEnergyStorage storage) {
-                extCap = new WrappedEnergyStorage(storage, () -> rsControl.getState() ? amountOutput : 0, () -> rsControl.getState() ? amountInput : 0);
+            if (extCapIn instanceof EnergyHandler handler) {
+                extCap = new WrappedEnergyStorage(handler, () -> rsControl.getState() ? amountOutput : 0, () -> rsControl.getState() ? amountInput : 0);
                 return (T) extCap;
             }
         }
@@ -227,16 +229,18 @@ public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllab
     // endregion
 
     // region WRAPPER CLASS
-    private static class WrappedEnergyStorage implements IEnergyStorage {
+    private static class WrappedEnergyStorage implements IEnergyStorage, EnergyHandler {
 
         protected IEnergyStorage wrappedStorage;
+        protected EnergyHandler wrappedHandler;
 
         protected IntSupplier curReceive;
         protected IntSupplier curExtract;
 
-        public WrappedEnergyStorage(IEnergyStorage wrappedStorage, IntSupplier curReceive, IntSupplier curExtract) {
+        public WrappedEnergyStorage(EnergyHandler wrappedHandler, IntSupplier curReceive, IntSupplier curExtract) {
 
-            this.wrappedStorage = wrappedStorage;
+            this.wrappedStorage = IEnergyStorage.of(wrappedHandler);
+            this.wrappedHandler = wrappedHandler;
             this.curReceive = curReceive;
             this.curExtract = curExtract;
         }
@@ -276,6 +280,32 @@ public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllab
 
             return wrappedStorage.canReceive();
         }
+
+        // region EnergyHandler
+        @Override
+        public long getAmountAsLong() {
+
+            return wrappedHandler.getAmountAsLong();
+        }
+
+        @Override
+        public long getCapacityAsLong() {
+
+            return wrappedHandler.getCapacityAsLong();
+        }
+
+        @Override
+        public int insert(int amount, TransactionContext transaction) {
+
+            return wrappedHandler.insert(Math.min(amount, curReceive.getAsInt()), transaction);
+        }
+
+        @Override
+        public int extract(int amount, TransactionContext transaction) {
+
+            return wrappedHandler.extract(Math.min(amount, curExtract.getAsInt()), transaction);
+        }
+        // endregion
 
     }
     // endregion

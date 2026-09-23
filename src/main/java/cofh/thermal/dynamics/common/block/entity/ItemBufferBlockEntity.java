@@ -4,6 +4,7 @@ import cofh.core.common.block.entity.SecurableBlockEntity;
 import cofh.core.common.network.packet.server.TileConfigPacket;
 import cofh.lib.common.inventory.IOItemInv;
 import cofh.lib.common.inventory.ItemStorageCoFH;
+import cofh.lib.common.inventory.SimpleItemHandler;
 import cofh.lib.common.inventory.StackValidatedItemStorage;
 import cofh.lib.util.Utils;
 import cofh.thermal.core.common.config.ThermalCoreConfig;
@@ -20,7 +21,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -193,11 +193,11 @@ public class ItemBufferBlockEntity extends SecurableBlockEntity implements MenuP
 
         inventory.read(registries, nbt);
 
-        latchMode = nbt.getBoolean(TAG_MODE);
-        checkNBT = nbt.getBoolean(TAG_FILTER_OPT_NBT);
+        latchMode = nbt.getBooleanOr(TAG_MODE, false);
+        checkNBT = nbt.getBooleanOr(TAG_FILTER_OPT_NBT, false);
 
-        inputLock = nbt.getBoolean("InputLock");
-        outputLock = nbt.getBoolean("OutputLock");
+        inputLock = nbt.getBooleanOr("InputLock", false);
+        outputLock = nbt.getBooleanOr("OutputLock", false);
 
         updateHandlers();
     }
@@ -260,7 +260,7 @@ public class ItemBufferBlockEntity extends SecurableBlockEntity implements MenuP
     }
 
     @Nonnull
-    public IItemHandler getItemHandler(@Nullable Direction side) {
+    public SimpleItemHandler getItemHandler(@Nullable Direction side) {
 
         if (side == getBlockState().getValue(FACING_ALL)) {
             return inventory.getHandler(OUTPUT);

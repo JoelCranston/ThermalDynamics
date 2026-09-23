@@ -28,7 +28,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -41,6 +42,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -195,17 +197,18 @@ public class DuctBlock extends Block implements EntityBlock, SimpleWaterloggedBl
         ModelUpdatePacket.sendToClient(level, pos);
     }
 
+    // The neighbour's position is gone; the side-specific part now runs from updateShape.
     @Override
-    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+    protected void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, @Nullable Orientation orientation, boolean isMoving) {
 
         if (worldIn.isClientSide()) {
             return;
         }
         BlockEntity tile = worldIn.getBlockEntity(pos);
         if (tile instanceof IDuct<?, ?> host) {
-            host.neighborChanged(blockIn, fromPos);
+            host.neighborChanged(blockIn, pos);
             IGridContainer gridContainer = IGridContainer.getGrid(worldIn);
-            if (gridContainer != null && gridContainer.onDuctNeighborChanged(host) || worldIn.getBlockEntity(fromPos) instanceof IDuct<?, ?>) {
+            if (gridContainer != null && gridContainer.onDuctNeighborChanged(host) || blockIn instanceof DuctBlock) {
                 worldIn.scheduleTick(pos, this, 1);
             }
         }
@@ -223,22 +226,6 @@ public class DuctBlock extends Block implements EntityBlock, SimpleWaterloggedBl
             if (gridContainer != null) {
                 gridContainer.onDuctPlaced(host, null);
             }
-        }
-    }
-
-    @Override
-    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-
-        if (state.getBlock() != newState.getBlock()) {
-            BlockEntity tile = worldIn.getBlockEntity(pos);
-            if (tile instanceof DuctBlockEntity<?, ?> host) {
-                host.dropAttachments();
-                IGridContainer gridContainer = IGridContainer.getGrid(worldIn);
-                if (gridContainer != null) {
-                    gridContainer.onDuctRemoved(host);
-                }
-            }
-            super.onRemove(state, worldIn, pos, newState, isMoving);
         }
     }
 
@@ -279,18 +266,23 @@ public class DuctBlock extends Block implements EntityBlock, SimpleWaterloggedBl
     }
 
     @Override
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+    protected BlockState updateShape(BlockState stateIn, LevelReader worldIn, ScheduledTickAccess ticks, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
 
         if (stateIn.getValue(WATERLOGGED)) {
-            worldIn.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
+            ticks.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
         }
+        BlockEntity tile = worldIn.getBlockEntity(currentPos);
         if (worldIn.isClientSide()) {
-            BlockEntity tile = worldIn.getBlockEntity(currentPos);
             if (tile instanceof DuctBlockEntity<?, ?>) {
                 tile.requestModelDataUpdate();
             }
+        } else if (tile instanceof IDuct<?, ?> host) {
+            host.neighborChanged(facingState.getBlock(), facingPos);
+            if (worldIn.getBlockEntity(facingPos) instanceof IDuct<?, ?>) {
+                ticks.scheduleTick(currentPos, this, 1);
+            }
         }
-        return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+        return super.updateShape(stateIn, worldIn, ticks, currentPos, facing, facingPos, facingState, random);
     }
 
     // region IDismantleable
@@ -301,7 +293,7 @@ public class DuctBlock extends Block implements EntityBlock, SimpleWaterloggedBl
         if (tile instanceof DuctBlockEntity<?, ?> duct) {
             duct.dismantleAttachments(player, returnDrops);
         }
-        ItemStack dropBlock = this.getCloneItemStack(state, target, world, pos, player);
+        ItemStack dropBlock = this.getCloneItemStack(world, pos, state, false, player);
         world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
         if (!returnDrops || player == null || !player.addItem(dropBlock)) {
             Utils.dropDismantleStackIntoWorld(dropBlock, world, pos);

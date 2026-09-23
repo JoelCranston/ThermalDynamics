@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "C": {
-      "tag": "c:ingots/bronze"
-    },
-    "G": {
-      "tag": "thermal:glass/hardened"
-    }
+    "C": "#c:ingots/bronze",
+    "G": "#thermal:glass/hardened"
   },
   "pattern": [
     "CGC"

@@ -56,12 +56,12 @@ public class RedstoneControlLogic implements IRedstoneControllable {
     // region NBT
     public RedstoneControlLogic read(CompoundTag nbt) {
 
-        CompoundTag subTag = nbt.getCompound(TAG_RS_CONTROL);
+        CompoundTag subTag = nbt.getCompoundOrEmpty(TAG_RS_CONTROL);
 
         if (!subTag.isEmpty()) {
-            power = subTag.getByte(TAG_RS_POWER);
-            threshold = subTag.getByte(TAG_RS_THRESHOLD);
-            mode = !isControllable() ? ControlMode.DISABLED : ControlMode.VALUES[subTag.getByte(TAG_RS_MODE)];
+            power = subTag.getByteOr(TAG_RS_POWER, (byte) 0);
+            threshold = subTag.getByteOr(TAG_RS_THRESHOLD, (byte) 0);
+            mode = !isControllable() ? ControlMode.DISABLED : ControlMode.VALUES[subTag.getByteOr(TAG_RS_MODE, (byte) 0)];
         }
         return this;
     }
@@ -82,11 +82,11 @@ public class RedstoneControlLogic implements IRedstoneControllable {
 
     public RedstoneControlLogic readSettings(CompoundTag nbt) {
 
-        CompoundTag subTag = nbt.getCompound(TAG_RS_CONTROL);
+        CompoundTag subTag = nbt.getCompoundOrEmpty(TAG_RS_CONTROL);
 
         if (!subTag.isEmpty() && isControllable()) {
-            threshold = subTag.getByte(TAG_RS_THRESHOLD);
-            mode = !isControllable() ? ControlMode.DISABLED : ControlMode.VALUES[subTag.getByte(TAG_RS_MODE)];
+            threshold = subTag.getByteOr(TAG_RS_THRESHOLD, (byte) 0);
+            mode = !isControllable() ? ControlMode.DISABLED : ControlMode.VALUES[subTag.getByteOr(TAG_RS_MODE, (byte) 0)];
         }
         return this;
     }

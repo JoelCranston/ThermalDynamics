@@ -2,18 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "G": {
-      "tag": "c:glass_blocks"
-    },
-    "I": {
-      "tag": "c:ingots/electrum"
-    },
-    "N": {
-      "tag": "c:nuggets/lead"
-    },
-    "R": {
-      "tag": "c:dusts/redstone"
-    }
+    "G": "#c:glass_blocks",
+    "I": "#c:ingots/electrum",
+    "N": "#c:nuggets/lead",
+    "R": "#c:dusts/redstone"
   },
   "pattern": [
     "NGN",

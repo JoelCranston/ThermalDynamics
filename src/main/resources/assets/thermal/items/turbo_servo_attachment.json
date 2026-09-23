@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "thermal:item/turbo_servo_attachment"
+  }
+}

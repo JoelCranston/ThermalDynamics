@@ -1,28 +1,43 @@
 package cofh.thermal.dynamics.client.renderer.model;
 
+import cofh.core.client.model.SimpleItemModel;
+import cofh.core.client.renderer.model.ModelUtils;
 import cofh.core.util.helpers.RenderHelper;
-import cofh.lib.client.renderer.block.model.BackfaceBakedQuad;
-import cofh.lib.client.renderer.block.model.RetexturedBakedQuad;
+import cofh.thermal.dynamics.client.model.DuctModel;
 import cofh.thermal.dynamics.client.model.data.DuctModelData;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.math.Transformation;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.util.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.dispatch.SingleVariant;
+import net.minecraft.client.renderer.block.dispatch.Variant;
+import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.ResolvedModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.IDynamicBakedModel;
+import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
+import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.neoforged.neoforge.model.data.ModelData;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4fc;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -31,7 +46,7 @@ import static cofh.lib.util.Constants.DIRECTIONS;
 import static cofh.thermal.core.client.ThermalTextures.BLANK_TEXTURE;
 import static cofh.thermal.dynamics.client.model.data.DuctModelData.DUCT_MODEL_DATA;
 
-public class DuctBakedModel implements IDynamicBakedModel {
+public class DuctBakedModel implements DynamicBlockStateModel {
 
     private static final boolean DEBUG = Boolean.getBoolean("DuctModel.debug");
 
@@ -48,58 +63,77 @@ public class DuctBakedModel implements IDynamicBakedModel {
         attachmentCache.clear();
     }
 
-    private final IGeometryBakingContext context;
-    private final TextureAtlasSprite particle;
+    private final Material.Baked particle;
+    private final boolean ambientOcclusion;
+    private final int materialFlags;
     private final Map<Direction, List<BakedQuad>> centerModel;
     private final Map<Direction, List<BakedQuad>> centerFill;
     private final Map<Direction, List<BakedQuad>> sides;
     private final Map<Direction, List<BakedQuad>> fill;
     private final Map<Direction, List<BakedQuad>> connections;
+    private final Set<BakedQuad> backfaces;
     private final boolean isInventory;
-    private final Map<DuctModelData, List<BakedQuad>> modelCache = new HashMap<>();
+    private final Map<DuctModelData, BlockStateModelPart> modelCache = new HashMap<>();
     private final Map<TexColorWrapper, Map<Direction, List<BakedQuad>>> centerFillCache = new Object2ObjectOpenHashMap<>();
     private final Map<TexColorWrapper, Map<Direction, List<BakedQuad>>> fillCache = new Object2ObjectOpenHashMap<>();
     private final Map<Identifier, Map<Direction, List<BakedQuad>>> attachmentCache = new Object2ObjectOpenHashMap<>();
 
-    public DuctBakedModel(IGeometryBakingContext context, TextureAtlasSprite particle, EnumMap<Direction, List<BakedQuad>> centerModel, EnumMap<Direction, List<BakedQuad>> centerFill, EnumMap<Direction, List<BakedQuad>> sides, EnumMap<Direction, List<BakedQuad>> fill, EnumMap<Direction, List<BakedQuad>> connections, boolean isInventory) {
+    public DuctBakedModel(Material.Baked particle, boolean ambientOcclusion, EnumMap<Direction, List<BakedQuad>> centerModel, EnumMap<Direction, List<BakedQuad>> centerFill, EnumMap<Direction, List<BakedQuad>> sides, EnumMap<Direction, List<BakedQuad>> fill, EnumMap<Direction, List<BakedQuad>> connections, Set<BakedQuad> backfaces, boolean isInventory) {
 
-        this.context = context;
         this.particle = particle;
+        this.ambientOcclusion = ambientOcclusion;
         this.centerModel = ImmutableMap.copyOf(centerModel);
         this.centerFill = ImmutableMap.copyOf(centerFill);
         this.sides = ImmutableMap.copyOf(sides);
         this.fill = ImmutableMap.copyOf(fill);
         this.connections = ImmutableMap.copyOf(connections);
+        this.backfaces = backfaces;
         this.isInventory = isInventory;
+
+        int flags = 0;
+        for (Map<Direction, List<BakedQuad>> map : List.of(this.centerModel, this.centerFill, this.sides, this.fill, this.connections)) {
+            for (List<BakedQuad> quads : map.values()) {
+                for (BakedQuad quad : quads) {
+                    flags |= quad.materialInfo().flags();
+                }
+            }
+        }
+        this.materialFlags = flags;
     }
 
     @Override
-    public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
+    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
 
-        if (side != null) {
-            return Collections.emptyList();
-        }
+        ModelData extraData = level.getModelData(pos);
         if (isInventory) {
             extraData = ModelData.builder()
                     .with(DUCT_MODEL_DATA, INV_DATA)
                     .build();
         }
         if (!(extraData.has(DUCT_MODEL_DATA))) {
-            return ImmutableList.of();
+            return;
         }
-        return getModelFor(extraData.get(DUCT_MODEL_DATA));
+        parts.add(getModelFor(extraData.get(DUCT_MODEL_DATA)));
     }
 
-    private List<BakedQuad> getModelFor(DuctModelData modelData) {
+    public BlockStateModelPart getInventoryModel() {
 
-        List<BakedQuad> modelQuads = modelCache.get(modelData);
-        if (!DEBUG && modelQuads != null) {
-            return modelQuads;
+        if (!isInventory) {
+            return new SimpleModelWrapper(QuadCollection.EMPTY, ambientOcclusion, particle);
+        }
+        return getModelFor(INV_DATA);
+    }
+
+    private BlockStateModelPart getModelFor(DuctModelData modelData) {
+
+        BlockStateModelPart model = modelCache.get(modelData);
+        if (!DEBUG && model != null) {
+            return model;
         }
         synchronized (modelCache) {
-            modelQuads = modelCache.get(modelData); // Another thread could have computed whilst we were locked.
-            if (!DEBUG && modelQuads != null) return modelQuads;
-            ImmutableList.Builder<BakedQuad> quads = ImmutableList.builder();
+            model = modelCache.get(modelData); // Another thread could have computed whilst we were locked.
+            if (!DEBUG && model != null) return model;
+            QuadCollection.Builder quads = new QuadCollection.Builder();
             for (Direction dir : DIRECTIONS) {
                 boolean internal = modelData.hasInternalConnection(dir);
                 boolean external = modelData.hasExternalConnection(dir);
@@ -107,20 +141,20 @@ public class DuctBakedModel implements IDynamicBakedModel {
 
                 if (!internal && !external) {
                     List<BakedQuad> fillQuads = rebakeFill(centerFillCache, centerFill, modelData.getFill(), modelData.getFillColor(), dir);
-                    quads.addAll(filterBlank(centerModel.get(dir), false));
-                    quads.addAll(filterBlank(fillQuads, false));
+                    filterBlank(centerModel.get(dir), false).forEach(quads::addUnculledFace);
+                    filterBlank(fillQuads, false).forEach(quads::addUnculledFace);
                 } else {
                     List<BakedQuad> fillQuads = rebakeFill(fillCache, fill, modelData.getFill(), modelData.getFillColor(), dir);
-                    quads.addAll(filterBlank(sides.get(dir), !fillQuads.isEmpty()));
-                    quads.addAll(filterBlank(fillQuads, false));
+                    filterBlank(sides.get(dir), !fillQuads.isEmpty()).forEach(quads::addUnculledFace);
+                    filterBlank(fillQuads, false).forEach(quads::addUnculledFace);
                     if (external) {
-                        quads.addAll(filterBlank(rebakeAttachment(attachmentCache, connections, attachment, dir), true));
+                        filterBlank(rebakeAttachment(attachmentCache, connections, attachment, dir), true).forEach(quads::addUnculledFace);
                     }
                 }
             }
-            modelQuads = quads.build();
-            modelCache.put(new DuctModelData(modelData), modelQuads);
-            return modelQuads;
+            model = new SimpleModelWrapper(quads.build(), ambientOcclusion, particle);
+            modelCache.put(new DuctModelData(modelData), model);
+            return model;
         }
     }
 
@@ -128,7 +162,7 @@ public class DuctBakedModel implements IDynamicBakedModel {
 
         List<BakedQuad> newQuads = new ArrayList<>(quads.size());
         for (BakedQuad quad : quads) {
-            if (cullBack && quad instanceof BackfaceBakedQuad || quad.getSprite().contents().name().equals(BLANK_TEXTURE)) {
+            if (cullBack && backfaces.contains(quad) || quad.materialInfo().sprite().contents().name().equals(BLANK_TEXTURE)) {
                 // do nothing
             } else {
                 newQuads.add(quad);
@@ -173,15 +207,12 @@ public class DuctBakedModel implements IDynamicBakedModel {
             }
 
             // Grab the sprite
-            TextureAtlasSprite sprite = Minecraft.getInstance()
-                    .getModelManager()
-                    .getAtlas(InventoryMenu.BLOCK_ATLAS)
-                    .getSprite(texture);
+            TextureAtlasSprite sprite = RenderHelper.getTexture(texture);
 
             // Retexture
             List<BakedQuad> newQuads = new ArrayList<>(fillQuads.size());
             for (BakedQuad quad : fillQuads) {
-                newQuads.add(new RetexturedBakedQuad(RenderHelper.mulColor(quad, color), sprite));
+                newQuads.add(ModelUtils.retexture(RenderHelper.mulColor(quad, color), sprite));
             }
             // slap in cache.
             retextured.put(dir, newQuads);
@@ -224,15 +255,12 @@ public class DuctBakedModel implements IDynamicBakedModel {
                 cache.put(texture, retextured);
             }
             // Grab the sprite
-            TextureAtlasSprite sprite = Minecraft.getInstance()
-                    .getModelManager()
-                    .getAtlas(InventoryMenu.BLOCK_ATLAS)
-                    .getSprite(texture);
+            TextureAtlasSprite sprite = RenderHelper.getTexture(texture);
 
             // Retexture
             List<BakedQuad> newQuads = new ArrayList<>(connQuads.size());
             for (BakedQuad quad : connQuads) {
-                newQuads.add(new RetexturedBakedQuad(quad, sprite));
+                newQuads.add(ModelUtils.retexture(quad, sprite));
             }
             // slap in cache.
             retextured.put(dir, newQuads);
@@ -260,12 +288,68 @@ public class DuctBakedModel implements IDynamicBakedModel {
     }
 
     //@formatter:off
-    @Override public boolean useAmbientOcclusion() { return context.useAmbientOcclusion(); }
-    @Override public boolean isGui3d() { return context.isGui3d(); }
-    @Override public boolean usesBlockLight() { return context.useBlockLight(); }
-    @Override public ItemTransforms getTransforms() { return context.getTransforms(); }
-    @Override public boolean isCustomRenderer() { return false; }
-    @Override public TextureAtlasSprite getParticleIcon() { return particle; }
-    @Override public ItemOverrides getOverrides() { return ItemOverrides.EMPTY; }
+    @Override public Material.Baked particleMaterial() { return particle; }
+    @Override public int materialFlags() { return materialFlags; }
     //@formatter:on
+
+    // region LOADER
+    public record Unbaked(Variant variant) implements CustomUnbakedBlockStateModel {
+
+        public static final MapCodec<Unbaked> CODEC = Variant.MAP_CODEC.xmap(Unbaked::new, Unbaked::variant);
+
+        @Override
+        public BlockStateModel bake(ModelBaker baker) {
+
+            ResolvedModel model = baker.getModel(variant.modelLocation());
+            DuctModel ductModel = DuctModel.find(model);
+            if (ductModel == null) {
+                return new SingleVariant(baker.missingBlockModelPart());
+            }
+            return ductModel.bake(baker, model, variant.modelState().asModelState(), DuctModel.isInventory(model));
+        }
+
+        @Override
+        public void resolveDependencies(ResolvableModel.Resolver resolver) {
+
+            variant.resolveDependencies(resolver);
+        }
+
+        @Override
+        public MapCodec<? extends CustomUnbakedBlockStateModel> codec() {
+
+            return CODEC;
+        }
+
+    }
+
+    public record ItemUnbaked(CuboidItemModelWrapper.Unbaked model) implements ItemModel.Unbaked {
+
+        public static final MapCodec<ItemUnbaked> CODEC = CuboidItemModelWrapper.Unbaked.MAP_CODEC.xmap(ItemUnbaked::new, ItemUnbaked::model);
+
+        @Override
+        public ItemModel bake(ItemModel.BakingContext context, Matrix4fc transformation) {
+
+            ModelBaker baker = context.blockModelBaker();
+            ResolvedModel resolvedModel = baker.getModel(model.model());
+            TextureSlots textureSlots = resolvedModel.getTopTextureSlots();
+            ModelRenderProperties properties = ModelRenderProperties.fromResolvedModel(baker, resolvedModel, textureSlots);
+            DuctModel ductModel = DuctModel.find(resolvedModel);
+            BlockStateModelPart part = ductModel == null ? baker.missingBlockModelPart() : ductModel.bake(baker, resolvedModel, BlockModelRotation.IDENTITY, DuctModel.isInventory(resolvedModel)).getInventoryModel();
+            return new SimpleItemModel((stack, original) -> original, part, model.tints(), properties, Transformation.compose(transformation, model.transformation()));
+        }
+
+        @Override
+        public void resolveDependencies(ResolvableModel.Resolver resolver) {
+
+            model.resolveDependencies(resolver);
+        }
+
+        @Override
+        public MapCodec<? extends ItemModel.Unbaked> type() {
+
+            return CODEC;
+        }
+
+    }
+    // endregion
 }

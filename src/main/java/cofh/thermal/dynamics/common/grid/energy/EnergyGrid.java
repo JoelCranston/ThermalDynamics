@@ -163,7 +163,7 @@ public class EnergyGrid extends Grid<EnergyGrid, EnergyGridNode> implements IRed
     @SuppressWarnings ("unchecked")
     public <T, C> T getCapability(BlockCapability<T, C> capability) {
 
-        if (capability == Capabilities.EnergyStorage.BLOCK) {
+        if (capability == Capabilities.Energy.BLOCK) {
             return (T) storage;
         }
         return null;
