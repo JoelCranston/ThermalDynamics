@@ -13,7 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
@@ -92,7 +92,7 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
 
         renderFluid = getGrid().getRenderFluid();
         // Not a RegistryFriendlyByteBuf, so FluidStack.STREAM_CODEC can't be used here.
-        buffer.writeResourceLocation(BuiltInRegistries.FLUID.getKey(renderFluid.getFluid()));
+        buffer.writeIdentifier(BuiltInRegistries.FLUID.getKey(renderFluid.getFluid()));
         buffer.writeVarInt(renderFluid.getAmount());
 
         super.getStatePacket(buffer);
@@ -104,7 +104,7 @@ public class FluidDuctWindowedBlockEntity extends FluidDuctBlockEntity implement
     public void handleStatePacket(FriendlyByteBuf buffer) {
 
         int prevLight = getLightValue();
-        renderFluid = new FluidStack(BuiltInRegistries.FLUID.get(buffer.readResourceLocation()), buffer.readVarInt());
+        renderFluid = new FluidStack(BuiltInRegistries.FLUID.get(buffer.readIdentifier()), buffer.readVarInt());
 
         if (prevLight != getLightValue()) {
             level.getChunkSource().getLightEngine().checkBlock(worldPosition);

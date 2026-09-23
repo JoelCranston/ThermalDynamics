@@ -11,7 +11,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -124,7 +124,7 @@ public class FluidFilterAttachment implements IFilterableAttachment, IRedstoneCo
     }
 
     @Override
-    public ResourceLocation getTexture() {
+    public Identifier getTexture() {
 
         switch (mode) {
             case TO_EXTERNAL_ONLY -> {

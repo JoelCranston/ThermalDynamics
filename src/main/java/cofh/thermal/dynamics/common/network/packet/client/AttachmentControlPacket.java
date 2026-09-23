@@ -40,7 +40,7 @@ public class AttachmentControlPacket {
 
     public static void sendToClient(IPacketHandlerAttachment attachment) {
 
-        if (attachment == null || attachment.world() == null || attachment.world().isClientSide || !attachment.hasControlPacket()) {
+        if (attachment == null || attachment.world() == null || attachment.world().isClientSide() || !attachment.hasControlPacket()) {
             return;
         }
         Utils.sendNear(attachment.world(), attachment.pos(), new AttachmentControlPayload(attachment.pos(), attachment.side(), attachment.getControlPacket(new FriendlyByteBuf(Unpooled.buffer()))));

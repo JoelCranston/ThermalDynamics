@@ -7,7 +7,7 @@ import cofh.thermal.dynamics.client.model.data.DuctModelData;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -15,12 +15,12 @@ import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,7 +59,7 @@ public class DuctBakedModel implements IDynamicBakedModel {
     private final Map<DuctModelData, List<BakedQuad>> modelCache = new HashMap<>();
     private final Map<TexColorWrapper, Map<Direction, List<BakedQuad>>> centerFillCache = new Object2ObjectOpenHashMap<>();
     private final Map<TexColorWrapper, Map<Direction, List<BakedQuad>>> fillCache = new Object2ObjectOpenHashMap<>();
-    private final Map<ResourceLocation, Map<Direction, List<BakedQuad>>> attachmentCache = new Object2ObjectOpenHashMap<>();
+    private final Map<Identifier, Map<Direction, List<BakedQuad>>> attachmentCache = new Object2ObjectOpenHashMap<>();
 
     public DuctBakedModel(IGeometryBakingContext context, TextureAtlasSprite particle, EnumMap<Direction, List<BakedQuad>> centerModel, EnumMap<Direction, List<BakedQuad>> centerFill, EnumMap<Direction, List<BakedQuad>> sides, EnumMap<Direction, List<BakedQuad>> fill, EnumMap<Direction, List<BakedQuad>> connections, boolean isInventory) {
 
@@ -103,7 +103,7 @@ public class DuctBakedModel implements IDynamicBakedModel {
             for (Direction dir : DIRECTIONS) {
                 boolean internal = modelData.hasInternalConnection(dir);
                 boolean external = modelData.hasExternalConnection(dir);
-                ResourceLocation attachment = modelData.getAttachment(dir);
+                Identifier attachment = modelData.getAttachment(dir);
 
                 if (!internal && !external) {
                     List<BakedQuad> fillQuads = rebakeFill(centerFillCache, centerFill, modelData.getFill(), modelData.getFillColor(), dir);
@@ -137,7 +137,7 @@ public class DuctBakedModel implements IDynamicBakedModel {
         return newQuads;
     }
 
-    private List<BakedQuad> rebakeFill(Map<TexColorWrapper, Map<Direction, List<BakedQuad>>> cache, Map<Direction, List<BakedQuad>> raw, @Nullable ResourceLocation texture, int color, Direction dir) {
+    private List<BakedQuad> rebakeFill(Map<TexColorWrapper, Map<Direction, List<BakedQuad>>> cache, Map<Direction, List<BakedQuad>> raw, @Nullable Identifier texture, int color, Direction dir) {
 
         // Easy bail if there are no quads.
         List<BakedQuad> fillQuads = raw.get(dir);
@@ -189,7 +189,7 @@ public class DuctBakedModel implements IDynamicBakedModel {
         }
     }
 
-    private List<BakedQuad> rebakeAttachment(Map<ResourceLocation, Map<Direction, List<BakedQuad>>> cache, Map<Direction, List<BakedQuad>> raw, @Nullable ResourceLocation texture, Direction dir) {
+    private List<BakedQuad> rebakeAttachment(Map<Identifier, Map<Direction, List<BakedQuad>>> cache, Map<Direction, List<BakedQuad>> raw, @Nullable Identifier texture, Direction dir) {
 
         // Easy bail if there are no quads.
         List<BakedQuad> connQuads = raw.get(dir);
@@ -242,10 +242,10 @@ public class DuctBakedModel implements IDynamicBakedModel {
 
     private static class TexColorWrapper {
 
-        ResourceLocation texture;
+        Identifier texture;
         int color;
 
-        public TexColorWrapper(ResourceLocation texture, int color) {
+        public TexColorWrapper(Identifier texture, int color) {
 
             this.texture = texture;
             this.color = color;

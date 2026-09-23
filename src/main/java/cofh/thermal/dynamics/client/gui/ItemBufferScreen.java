@@ -7,7 +7,7 @@ import cofh.core.common.network.packet.server.ContainerConfigPacket;
 import cofh.thermal.dynamics.common.inventory.ItemBufferMenu;
 import cofh.thermal.dynamics.common.inventory.slot.SlotFalseBuffer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
@@ -19,7 +19,7 @@ import static cofh.lib.util.helpers.SoundHelper.playClickSound;
 public class ItemBufferScreen extends ContainerScreenCoFH<ItemBufferMenu> {
 
     public static final String TEX_PATH = ID_THERMAL + ":textures/gui/container/item_buffer.png";
-    public static final ResourceLocation TEXTURE = ResourceLocation.parse(TEX_PATH);
+    public static final Identifier TEXTURE = Identifier.parse(TEX_PATH);
 
     public static final String TEX_MODE_LATCH_OFF = ID_THERMAL + ":textures/gui/container/item_buffer_mode_normal.png";
     public static final String TEX_MODE_LATCH_ON = ID_THERMAL + ":textures/gui/container/item_buffer_mode_latch.png";

@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -58,7 +58,7 @@ public interface IAttachment extends INBTSerializable<CompoundTag> {
         return ItemStack.EMPTY;
     }
 
-    default ResourceLocation getTexture() {
+    default Identifier getTexture() {
 
         return null;
     }

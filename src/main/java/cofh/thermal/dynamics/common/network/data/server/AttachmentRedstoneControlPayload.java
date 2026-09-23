@@ -6,13 +6,13 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import static cofh.lib.util.constants.ModIds.ID_THERMAL_DYNAMICS;
 
 public record AttachmentRedstoneControlPayload(BlockPos pos, Direction side, int threshold, byte mode) implements CustomPacketPayload {
 
-    public static final Type<AttachmentRedstoneControlPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "attachment_redstone_packet"));
+    public static final Type<AttachmentRedstoneControlPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, "attachment_redstone_packet"));
 
     public static final StreamCodec<FriendlyByteBuf, AttachmentRedstoneControlPayload> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, AttachmentRedstoneControlPayload::pos,

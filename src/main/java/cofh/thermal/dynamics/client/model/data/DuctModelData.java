@@ -1,8 +1,8 @@
 package cofh.thermal.dynamics.client.model.data;
 
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
+import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.model.data.ModelProperty;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -21,9 +21,9 @@ public class DuctModelData {
     // XXXXXXXXXXXXXXXX_XXXXEEEEEEIIIIII
     private int state;
     @Nullable
-    private ResourceLocation fill;
+    private Identifier fill;
     @Nullable
-    private ResourceLocation[] attachments;
+    private Identifier[] attachments;
 
     private int fillColor = 0xFFFFFF;
 
@@ -65,7 +65,7 @@ public class DuctModelData {
         setStateBit(dir.ordinal() + 6, present);
     }
 
-    public void setFill(@Nullable ResourceLocation loc) {
+    public void setFill(@Nullable Identifier loc) {
 
         fill = loc;
     }
@@ -75,10 +75,10 @@ public class DuctModelData {
         fillColor = color;
     }
 
-    public void setAttachment(Direction dir, @Nullable ResourceLocation loc) {
+    public void setAttachment(Direction dir, @Nullable Identifier loc) {
 
         if (attachments == null) {
-            attachments = new ResourceLocation[6];
+            attachments = new Identifier[6];
         }
         attachments[dir.ordinal()] = loc;
     }
@@ -120,13 +120,13 @@ public class DuctModelData {
     }
 
     @Nullable
-    public ResourceLocation getFill() {
+    public Identifier getFill() {
 
         return fill;
     }
 
     @Nullable
-    public ResourceLocation getAttachment(Direction dir) {
+    public Identifier getAttachment(Direction dir) {
 
         if (attachments == null) {
             return null;

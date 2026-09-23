@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -443,7 +443,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
     @Override
     public final G getGrid() {
 
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             throw new UnsupportedOperationException("No grid representation on client.");
         }
         if (grid == null) {
@@ -458,7 +458,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
     @Override
     public final void setGrid(G grid) {
 
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             throw new UnsupportedOperationException("No grid representation on client.");
         }
         this.grid = grid;
@@ -550,7 +550,7 @@ public abstract class DuctBlockEntity<G extends Grid<G, N>, N extends GridNode<G
     @Nullable
     public <T, C> T getCapability(BlockCapability<T, C> capability, Direction side) {
 
-        if (side == null || level == null || level.isClientSide || connections[side.ordinal()] == DISABLED || getGrid() == null) {
+        if (side == null || level == null || level.isClientSide() || connections[side.ordinal()] == DISABLED || getGrid() == null) {
             return null;
         }
         return attachments[side.ordinal()].wrapGridCapability(capability, getGrid().getCapability(capability));

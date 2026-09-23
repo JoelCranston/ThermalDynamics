@@ -10,7 +10,7 @@ import cofh.thermal.dynamics.common.attachment.FluidServoAttachment;
 import cofh.thermal.dynamics.common.inventory.attachment.FluidServoAttachmentMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
@@ -24,7 +24,7 @@ import static cofh.lib.util.helpers.StringHelper.format;
 
 public class FluidServoAttachmentScreen extends ContainerScreenCoFH<FluidServoAttachmentMenu> {
 
-    public static final ResourceLocation TEXTURE = ResourceLocation.parse(PATH_GUI + "generic.png");
+    public static final Identifier TEXTURE = Identifier.parse(PATH_GUI + "generic.png");
 
     public static final String TEX_EXTRACT = ID_THERMAL + ":textures/gui/elements/info_extract_to_fluid_grid.png";
 

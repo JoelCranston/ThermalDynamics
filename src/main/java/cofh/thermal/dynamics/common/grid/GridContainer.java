@@ -19,7 +19,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -501,7 +501,7 @@ public class GridContainer extends SavedData implements IGridContainer {
             CompoundTag gridTag = nbt.getCompound(i);
             UUID id = gridTag.getUUID("id");
             assert !grids.containsKey(id) : "Duplicate grid found.";
-            ResourceLocation gridTypeName = ResourceLocation.parse(gridTag.getString("type"));
+            Identifier gridTypeName = Identifier.parse(gridTag.getString("type"));
             IGridType<?> gridType = ThermalDynamics.GRID_TYPE_REGISTRY.get(gridTypeName);
             if (gridType == null) {
                 LOGGER.error("Failed to load Grid {} with type {} in world {}. GridType is no longer registered, it will be removed from the world.", id, gridTypeName, world.dimension().location());

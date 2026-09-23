@@ -11,7 +11,7 @@ import cofh.thermal.dynamics.common.inventory.attachment.EnergyLimiterAttachment
 import cofh.thermal.dynamics.common.network.packet.server.AttachmentConfigPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 import static cofh.core.util.helpers.GuiHelper.*;
@@ -23,7 +23,7 @@ import static cofh.lib.util.helpers.StringHelper.format;
 public class EnergyLimiterAttachmentScreen extends ContainerScreenCoFH<EnergyLimiterAttachmentMenu> {
 
     public static final String TEX_PATH = ID_THERMAL + ":textures/gui/container/energy_limiter_attachment.png";
-    public static final ResourceLocation TEXTURE = ResourceLocation.parse(TEX_PATH);
+    public static final Identifier TEXTURE = Identifier.parse(TEX_PATH);
 
     public static final String TEX_INPUT = ID_THERMAL + ":textures/gui/elements/info_to_energy_grid.png";
     public static final String TEX_OUTPUT = ID_THERMAL + ":textures/gui/elements/info_from_energy_grid.png";

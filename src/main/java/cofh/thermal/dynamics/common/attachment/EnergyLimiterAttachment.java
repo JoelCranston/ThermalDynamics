@@ -9,7 +9,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -112,7 +112,7 @@ public class EnergyLimiterAttachment implements IAttachment, IRedstoneControllab
     }
 
     @Override
-    public ResourceLocation getTexture() {
+    public Identifier getTexture() {
 
         return rsControl.getState() ? ENERGY_LIMITER_ATTACHMENT_ACTIVE_LOC : ENERGY_LIMITER_ATTACHMENT_LOC;
     }

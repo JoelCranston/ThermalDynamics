@@ -13,7 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -105,7 +105,7 @@ public class FluidTurboServoAttachmentMenu extends AttachmentMenu implements IFi
         for (int i = 0; i < size; ++i) {
             // Not a RegistryFriendlyByteBuf, so FluidStack.STREAM_CODEC can't be used here.
             FluidStack stack = getFilterStacks().get(i);
-            buffer.writeResourceLocation(BuiltInRegistries.FLUID.getKey(stack.getFluid()));
+            buffer.writeIdentifier(BuiltInRegistries.FLUID.getKey(stack.getFluid()));
             buffer.writeVarInt(stack.getAmount());
         }
         buffer.writeInt(attachment.amountTransfer);
@@ -119,7 +119,7 @@ public class FluidTurboServoAttachmentMenu extends AttachmentMenu implements IFi
         byte size = buffer.readByte();
         List<FluidStack> fluidStacks = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
-            ResourceLocation fluidId = buffer.readResourceLocation();
+            Identifier fluidId = buffer.readIdentifier();
             int amount = buffer.readVarInt();
             fluidStacks.add(new FluidStack(BuiltInRegistries.FLUID.get(fluidId), amount));
         }

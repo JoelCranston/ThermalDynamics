@@ -6,7 +6,7 @@ import cofh.core.client.gui.element.SimpleTooltip;
 import cofh.thermal.dynamics.common.interblock.ItemServoInterblock;
 import cofh.thermal.dynamics.common.inventory.interblock.ItemServoInterblockMenu;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
@@ -17,7 +17,7 @@ import static cofh.lib.util.helpers.SoundHelper.playClickSound;
 
 public class ItemServoInterblockScreen extends ContainerScreenCoFH<ItemServoInterblockMenu> {
 
-    public static final ResourceLocation TEXTURE = ResourceLocation.parse(PATH_GUI + "generic.png");
+    public static final Identifier TEXTURE = Identifier.parse(PATH_GUI + "generic.png");
 
     public static final String TEX_DENY_LIST = PATH_GUI + "filters/filter_deny_list.png";
     public static final String TEX_ALLOW_LIST = PATH_GUI + "filters/filter_allow_list.png";

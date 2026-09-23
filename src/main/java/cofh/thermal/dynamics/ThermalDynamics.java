@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -48,7 +48,7 @@ public class ThermalDynamics {
 
     public static final Logger LOG = LogManager.getLogger(ID_THERMAL_DYNAMICS);
 
-    public static final ResourceLocation GRID_REGISTRY_LOC = ResourceLocation.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, ID_GRID_TYPE);
+    public static final Identifier GRID_REGISTRY_LOC = Identifier.fromNamespaceAndPath(ID_THERMAL_DYNAMICS, ID_GRID_TYPE);
     public static final DeferredRegisterCoFH<IGridType<?>> GRIDS = DeferredRegisterCoFH.create(GRID_REGISTRY_LOC, ID_THERMAL_DYNAMICS);
 
     public static final Registry<IGridType<?>> GRID_TYPE_REGISTRY = GRIDS.makeRegistry(e -> e.sync(false));
